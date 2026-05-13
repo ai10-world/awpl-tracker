@@ -1,6 +1,4 @@
-// lib/supabase/server.ts
-// Use this in Server Components and Server Actions
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export function createClient() {
@@ -14,13 +12,13 @@ export function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: object }[]) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Server Component — cookies set in middleware instead
+            // Server Component
           }
         },
       },
