@@ -27,6 +27,17 @@ export async function signUp(formData: FormData) {
   // Use admin client to bypass email rate limit
   const adminSupabase = getAdminClient();
 
+  // Check if AWPL ID already exists
+const { data: existing } = await adminSupabase
+  .from("profiles")
+  .select("id")
+  .eq("awpl_id", awplId)
+  .single();
+
+if (existing) {
+  return { error: "An account with this AWPL ID already exists. Please sign in instead." };
+}
+
   const { data: authData, error: authError } =
     await adminSupabase.auth.admin.createUser({
       email,

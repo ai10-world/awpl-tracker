@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { logOut } from "@/lib/actions/auth";
+import { SignOutButton } from "@/components/ui/signout-button";
 import { LogOut, User, LayoutDashboard } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -45,15 +46,7 @@ export default async function DashboardPage() {
                 </span>
               )}
             </div>
-            <form action={logOut}>
-              <button
-                type="submit"
-                className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors"
-              >
-                <LogOut size={13} />
-                Sign out
-              </button>
-            </form>
+            <SignOutButton />
           </div>
         </div>
       </nav>
