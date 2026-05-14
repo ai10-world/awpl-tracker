@@ -75,26 +75,37 @@ if (existing) {
 
 export async function logIn(formData: FormData) {
   const supabase = createClient();
+  const adminSupabase = getAdminClient();
 
   const awplId = formData.get("awpl_id") as string;
   const password = formData.get("password") as string;
   const pin = formData.get("pin") as string;
 
-  const { data: profile, error: profileError } = await supabase
+  // Use admin client to bypass RLS for login lookup
+  const { data: profile, error: profileError } = await adminSupabase
     .from("profiles")
     .select("email, pin_hash")
     .eq("awpl_id", awplId)
     .single();
 
-  if (profileError || !profile) return { error: "No account found with this AWPL ID." };
-  if (profile.pin_hash !== pin) return { error: "Incorrect PIN." };
+  if (profileError || !profile) {
+    return { error: "No account found with this AWPL ID." };
+  }
 
+  // Check PIN first
+  if (profile.pin_hash !== pin) {
+    return { error: "Incorrect PIN. Please try again." };
+  }
+
+  // Then check password
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: profile.email,
     password,
   });
 
-  if (signInError) return { error: signInError.message };
+  if (signInError) {
+    return { error: "Incorrect password. Please try again." };
+  }
 
   revalidatePath("/", "layout");
   redirect("/dashboard");
