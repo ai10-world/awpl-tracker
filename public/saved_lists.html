@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Saved Lists — AWPL</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --forest:    #0d3321;
+  --leaf:      #16a05d;
+  --leaf-lt:   #1dbc6e;
+  --sage:      #2f6f4f;
+  --mint:      #d4f0e3;
+  --cream:     #f7faf8;
+  --paper:     #ffffff;
+  --sky:       #0586c8;
+  --danger:    #c0392b;
+  --text:      #0c2419;
+  --muted:     #5a8070;
+  --border:    rgba(22,160,93,.15);
+  --card-sh:   0 2px 12px rgba(13,51,33,.06), 0 1px 3px rgba(13,51,33,.04);
+  --card-sh-h: 0 12px 40px rgba(13,51,33,.12), 0 4px 12px rgba(13,51,33,.06);
+  --radius:    16px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  background-size: 200px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .4;
+}
+
+/* ── DECORATIVE BLOBS ── */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: .18;
+}
+.blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, #1dbc6e, transparent); top: -200px; right: -200px; }
+.blob-2 { width: 400px; height: 400px; background: radial-gradient(circle, #0586c8, transparent); bottom: -100px; left: -100px; }
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  z-index: 10;
+  padding: 28px 40px 26px;
+  background: rgba(247,250,248,.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--leaf), var(--forest));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 14px rgba(22,160,93,.35);
+  flex-shrink: 0;
+}
+
+.brand-text h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.4rem;
+  color: var(--forest);
+  line-height: 1.1;
+}
+
+.brand-text span {
+  font-size: .72rem;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+  color: var(--sage);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s cubic-bezier(.4,0,.2,1);
+  box-shadow: var(--card-sh);
+}
+.back-btn:hover {
+  border-color: var(--leaf);
+  color: var(--leaf);
+  transform: translateX(-2px);
+  box-shadow: 0 4px 14px rgba(22,160,93,.15);
+}
+
+/* ── STATS BAR ── */
+.stats-bar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  gap: 0;
+  padding: 0 40px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-right: 1px solid var(--border);
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.stat-pill:last-child { border-right: none; }
+
+.stat-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.stat-icon.green { background: rgba(22,160,93,.1); }
+.stat-icon.blue  { background: rgba(5,134,200,.1); }
+.stat-icon.amber { background: rgba(245,158,11,.1); }
+
+.stat-info .num {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+.stat-info .lbl {
+  font-size: .7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-top: 2px;
+}
+
+/* ── SEARCH & FILTER BAR ── */
+.toolbar {
+  position: relative;
+  z-index: 5;
+  padding: 20px 40px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 11px 16px 11px 40px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .85rem;
+  outline: none;
+  transition: all .2s;
+  box-shadow: var(--card-sh);
+}
+.search-input:focus { border-color: var(--leaf); box-shadow: 0 0 0 4px rgba(22,160,93,.08); }
+.search-input::placeholder { color: var(--muted); }
+
+.sort-select {
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  box-shadow: var(--card-sh);
+  transition: border-color .2s;
+  appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a8070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.sort-select:focus { border-color: var(--leaf); }
+
+/* ── GRID ── */
+.main {
+  position: relative;
+  z-index: 1;
+  padding: 0 40px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: var(--card-sh);
+  overflow: hidden;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  animation: cardIn .4s cubic-bezier(.4,0,.2,1) both;
+  cursor: default;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--leaf), var(--sky));
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.card:hover { box-shadow: var(--card-sh-h); transform: translateY(-3px); border-color: rgba(22,160,93,.3); }
+.card:hover::before { opacity: 1; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-top {
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.card-avatar {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--mint), rgba(5,134,200,.1));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--border);
+}
+
+.card-meta { flex: 1; min-width: 0; }
+
+.card-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.1rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.card-date {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.card-body {
+  padding: 16px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  border: 1px solid transparent;
+}
+
+.chip-green { background: rgba(22,160,93,.08); color: var(--sage); border-color: rgba(22,160,93,.15); }
+.chip-blue  { background: rgba(5,134,200,.08); color: #0570a6; border-color: rgba(5,134,200,.15); }
+.chip-amber { background: rgba(245,158,11,.08); color: #b45309; border-color: rgba(245,158,11,.15); }
+.chip-gray  { background: rgba(90,128,112,.07); color: var(--muted); border-color: rgba(90,128,112,.15); }
+
+.card-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .8rem;
+  font-weight: 500;
+  transition: all .2s cubic-bezier(.4,0,.2,1);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-view {
+  background: rgba(22,160,93,.1);
+  color: var(--sage);
+  border: 1px solid rgba(22,160,93,.2);
+  flex: 1;
+  justify-content: center;
+}
+.btn-view:hover { background: var(--leaf); color: white; border-color: var(--leaf); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,160,93,.3); }
+
+.btn-edit {
+  background: rgba(5,134,200,.1);
+  color: #0570a6;
+  border: 1px solid rgba(5,134,200,.2);
+  flex: 1;
+  justify-content: center;
+}
+.btn-edit:hover { background: var(--sky); color: white; border-color: var(--sky); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,134,200,.3); }
+
+.btn-del {
+  background: rgba(192,57,43,.07);
+  color: var(--danger);
+  border: 1px solid rgba(192,57,43,.15);
+  padding: 8px 12px;
+}
+.btn-del:hover { background: var(--danger); color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,.3); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  text-align: center;
+  gap: 16px;
+  z-index: 5;
+  position: relative;
+}
+
+.empty-state.show { display: flex; }
+
+.empty-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--mint), rgba(5,134,200,.1));
+  border-radius: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 8px 24px rgba(22,160,93,.15);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.empty-state h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: .9rem;
+  max-width: 300px;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(13,51,33,.45);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn .2s ease;
+}
+
+.modal-overlay.open { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--paper);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(13,51,33,.25), 0 8px 24px rgba(13,51,33,.12);
+  animation: modalSlide .3s cubic-bezier(.4,0,.2,1);
+  border: 1.5px solid var(--border);
+}
+
+@keyframes modalSlide {
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.modal-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--leaf), var(--forest));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(22,160,93,.3);
+}
+
+.modal-title { flex: 1; }
+.modal-title h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.3rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+.modal-title p {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.modal-close {
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.modal-close:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+.modal-body {
+  padding: 20px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Items table */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .83rem;
+  margin-bottom: 20px;
+}
+
+.items-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--cream);
+  color: var(--muted);
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.items-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(22,160,93,.07);
+  color: var(--text);
+}
+
+.items-table tr:last-child td { border-bottom: none; }
+.items-table tr:hover td { background: var(--cream); }
+
+.items-table td:first-child {
+  font-weight: 500;
+  color: var(--forest);
+}
+
+.badge-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  background: var(--mint);
+  color: var(--sage);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.total-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.total-card .t-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.total-card .t-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.modal-footer {
+  padding: 16px 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  background: var(--cream);
+}
+
+/* ── CONFIRM DIALOG ── */
+.confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(13,51,33,.5);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.confirm-overlay.open { display: flex; animation: fadeIn .2s ease; }
+
+.confirm-box {
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(13,51,33,.2);
+  border: 1.5px solid var(--border);
+  text-align: center;
+  animation: modalSlide .3s cubic-bezier(.4,0,.2,1);
+}
+
+.confirm-box .warn-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.confirm-box h4 { font-family: 'Instrument Serif', serif; font-size: 1.2rem; margin-bottom: 8px; }
+.confirm-box p { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 10px; justify-content: center; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: var(--forest);
+  color: white;
+  font-size: .85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 300;
+  box-shadow: 0 8px 24px rgba(13,51,33,.25);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  header { padding: 18px 20px; }
+  .stats-bar { padding: 0 20px; }
+  .toolbar { padding: 14px 20px; }
+  .main { padding: 0 20px 60px; }
+  .grid { grid-template-columns: 1fr; }
+  .stat-pill { padding: 14px 16px; min-width: 110px; }
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="brand-icon">🌿</div>
+    <div class="brand-text">
+      <h1>Saved Lists</h1>
+      <span>AWPL Order Manager</span>
+    </div>
+  </div>
+  <a href="AWPL (all good).html" class="back-btn">
+    ← Back to Calculator
+  </a>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar" style="display:none">
+  <div class="stat-pill">
+    <div class="stat-icon green">📋</div>
+    <div class="stat-info">
+      <div class="num" id="statCount">0</div>
+      <div class="lbl">Total Lists</div>
+    </div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-icon blue">📦</div>
+    <div class="stat-info">
+      <div class="num" id="statItems">0</div>
+      <div class="lbl">Total Items</div>
+    </div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-icon amber">💰</div>
+    <div class="stat-info">
+      <div class="num" id="statDP">₹0</div>
+      <div class="lbl">Combined DP</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar" id="toolbar" style="display:none">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="searchInput" placeholder="Search lists by name…" oninput="filterLists()">
+  </div>
+  <select class="sort-select" id="sortSelect" onchange="filterLists()">
+    <option value="newest">Newest First</option>
+    <option value="oldest">Oldest First</option>
+    <option value="name">Name A–Z</option>
+    <option value="dp">Highest DP</option>
+  </select>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main">
+  <div class="grid" id="grid"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">📁</div>
+    <h3>No saved lists yet</h3>
+    <p>Head back to the calculator and save your first order list.</p>
+    <a href="AWPL (all good).html" class="btn btn-view" style="margin-top:8px; text-decoration:none; padding:12px 24px;">Go to Calculator →</a>
+  </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="modal-overlay" id="viewModal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon">📋</div>
+      <div class="modal-title">
+        <h3 id="vmTitle">List Name</h3>
+        <p id="vmDate">Saved …</p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <table class="items-table" id="vmTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>DP (₹)</th>
+            <th>SP</th>
+          </tr>
+        </thead>
+        <tbody id="vmBody"></tbody>
+      </table>
+      <div class="totals-grid" id="vmTotals"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-del" id="vmDelBtn">🗑 Delete</button>
+      <button class="btn btn-edit" id="vmEditBtn">✏ Edit in Calculator</button>
+      <button class="btn btn-view" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="warn-icon">🗑️</div>
+    <h4>Delete this list?</h4>
+    <p>This action cannot be undone. The list will be permanently removed.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-view" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-del" id="confirmYesBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✅</span>
+  <span id="toastMsg">Done!</span>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+const KEY = 'awpl_saved_lists';
+let allLists = [];
+let pendingDeleteId = null;
+let currentViewId = null;
+
+function getLists() {
+  try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveLists(lists) {
+  localStorage.setItem(KEY, JSON.stringify(lists));
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+// ── EMOJIS based on name ──────────────────────────────────────
+const EMOJIS = ['🛒','📦','🌿','💼','📋','🌾','🍃','🌱','📊','💰','🏪','🎯','⭐','🔖'];
+function getEmoji(str) {
+  let h = 0; for (let i=0; i<str.length; i++) h = ((h<<5)-h)+str.charCodeAt(i);
+  return EMOJIS[Math.abs(h) % EMOJIS.length];
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function updateStats(lists) {
+  if (!lists.length) {
+    document.getElementById('statsBar').style.display = 'none';
+    document.getElementById('toolbar').style.display = 'none';
+    return;
+  }
+  document.getElementById('statsBar').style.display = 'flex';
+  document.getElementById('toolbar').style.display = 'flex';
+  document.getElementById('statCount').textContent = lists.length;
+  const totalItems = lists.reduce((s, l) => s + (l.items?.length || 0), 0);
+  document.getElementById('statItems').textContent = totalItems;
+  const totalDP = lists.reduce((s, l) => s + (l.totals?.totalDP || 0), 0);
+  document.getElementById('statDP').textContent = '₹' + totalDP.toLocaleString('en-IN');
+}
+
+// ── FILTER & SORT ─────────────────────────────────────────────
+function filterLists() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+  let filtered = allLists.filter(l => l.name.toLowerCase().includes(q));
+
+  if (sort === 'newest') filtered.sort((a,b) => b.createdAt - a.createdAt);
+  else if (sort === 'oldest') filtered.sort((a,b) => a.createdAt - b.createdAt);
+  else if (sort === 'name') filtered.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sort === 'dp') filtered.sort((a,b) => (b.totals?.totalDP||0) - (a.totals?.totalDP||0));
+
+  renderGrid(filtered);
+}
+
+// ── RENDER GRID ───────────────────────────────────────────────
+function renderGrid(lists) {
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('emptyState');
+
+  if (!lists.length) {
+    grid.innerHTML = '';
+    empty.classList.add('show');
+    return;
+  }
+  empty.classList.remove('show');
+
+  grid.innerHTML = lists.map((l, idx) => {
+    const emoji = getEmoji(l.name);
+    const date = new Date(l.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    const time = new Date(l.createdAt).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+    const itemCount = l.items?.length || 0;
+    const dp = l.totals?.totalDP ? '₹' + l.totals.totalDP.toLocaleString('en-IN') : '—';
+    const mrp = l.totals?.totalMRP ? '₹' + l.totals.totalMRP.toLocaleString('en-IN') : '—';
+    const sp = l.totals?.totalSP ? l.totals.totalSP.toFixed(1) + ' sp' : '—';
+    const qty = l.totals?.totalQty || '—';
+
+    return `
+      <div class="card" style="animation-delay:${idx*60}ms">
+        <div class="card-top">
+          <div class="card-avatar">${emoji}</div>
+          <div class="card-meta">
+            <div class="card-name" title="${escapeHtml(l.name)}">${escapeHtml(l.name)}</div>
+            <div class="card-date">📅 ${date} &nbsp;·&nbsp; 🕐 ${time}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="stat-row">
+            <span class="chip chip-gray">📦 ${itemCount} product${itemCount !== 1 ? 's' : ''}</span>
+            <span class="chip chip-gray">⚖️ Qty ${qty}</span>
+          </div>
+          <div class="stat-row">
+            <span class="chip chip-green">DP ${dp}</span>
+            <span class="chip chip-blue">MRP ${mrp}</span>
+            <span class="chip chip-amber">SP ${sp}</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-view" onclick="viewList('${l.id}')">👁 View</button>
+          <button class="btn btn-edit" onclick="editList('${l.id}')">✏ Edit</button>
+          <button class="btn btn-del" onclick="confirmDelete('${l.id}')" title="Delete">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── VIEW MODAL ────────────────────────────────────────────────
+function viewList(id) {
+  currentViewId = id;
+  const l = allLists.find(x => x.id === id);
+  if (!l) return;
+
+  document.getElementById('vmTitle').textContent = l.name;
+  document.getElementById('vmDate').textContent =
+    '📅 Saved: ' + new Date(l.createdAt).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  const tbody = document.getElementById('vmBody');
+  tbody.innerHTML = (l.items || []).map((it, i) => `
+    <tr>
+      <td><span class="badge-num">${i+1}</span></td>
+      <td>${escapeHtml(it.name)}</td>
+      <td>${it.qty}</td>
+      <td>₹${Number(it.dp).toLocaleString('en-IN')}</td>
+      <td>${it.sp}</td>
+    </tr>`).join('');
+
+  const t = l.totals || {};
+  document.getElementById('vmTotals').innerHTML = `
+    <div class="total-card"><div class="t-label">Total Qty</div><div class="t-value">${t.totalQty || '—'}</div></div>
+    <div class="total-card"><div class="t-label">Total DP</div><div class="t-value">₹${t.totalDP ? t.totalDP.toLocaleString('en-IN') : '—'}</div></div>
+    <div class="total-card"><div class="t-label">Total MRP</div><div class="t-value">₹${t.totalMRP ? t.totalMRP.toLocaleString('en-IN') : '—'}</div></div>
+    <div class="total-card"><div class="t-label">Total SP</div><div class="t-value">${t.totalSP ? t.totalSP.toFixed(2)+' sp' : '—'}</div></div>`;
+
+  document.getElementById('vmDelBtn').onclick = () => { closeModal(); confirmDelete(id); };
+  document.getElementById('vmEditBtn').onclick = () => editList(id);
+
+  document.getElementById('viewModal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('viewModal')) return;
+  document.getElementById('viewModal').classList.remove('open');
+  currentViewId = null;
+}
+
+// ── EDIT ──────────────────────────────────────────────────────
+function editList(id) {
+  localStorage.setItem('awpl_edit_load', id);
+  window.location.href = 'AWPL (all good).html';
+}
+
+// ── DELETE ────────────────────────────────────────────────────
+function confirmDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function closeConfirm() {
+  pendingDeleteId = null;
+  document.getElementById('confirmOverlay').classList.remove('open');
+}
+
+document.getElementById('confirmYesBtn').onclick = () => {
+  if (!pendingDeleteId) return;
+  allLists = allLists.filter(l => l.id !== pendingDeleteId);
+  saveLists(allLists);
+  pendingDeleteId = null;
+  document.getElementById('confirmOverlay').classList.remove('open');
+  updateStats(allLists);
+  filterLists();
+  showToast('🗑️', 'List deleted successfully');
+};
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer;
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── KEYBOARD ─────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('viewModal').classList.remove('open');
+    document.getElementById('confirmOverlay').classList.remove('open');
+  }
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+allLists = getLists();
+updateStats(allLists);
+filterLists();
+</script>
+</body>
+</html>
