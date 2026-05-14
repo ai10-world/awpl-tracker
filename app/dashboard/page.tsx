@@ -61,22 +61,39 @@ export default async function DashboardPage() {
         <p className="text-white/30 text-sm">
           Dashboard is coming in Phase 2 — team management, reports & more.
         </p>
-
+                                          
         <div className="mt-12 grid sm:grid-cols-3 gap-4 max-w-xl mx-auto text-left">
-          {[
+         {[
             { label: "Team Management", phase: "Phase 2" },
             { label: "Daily Reports", phase: "Phase 3" },
             { label: "Sales Tracker", phase: "Phase 3" },
           ].map((item) => (
-            <div
-              key={item.label}
-              className="p-4 rounded-xl bg-white/3 border border-white/8"
-            >
-              <div className="text-xs text-white/25 mb-1">{item.phase}</div>
-              <div className="text-sm text-white/60">{item.label}</div>
-            </div>
+           <div
+             key={item.label}
+             className="p-4 rounded-xl bg-white/3 border border-white/8">
+             <div className="text-xs text-white/25 mb-1">{item.phase}</div>
+             <div className="text-sm text-white/60">{item.label}</div>
+           </div>
           ))}
         </div>
+
+            {/* Price Calculator Button */}
+        <div className="mt-6 max-w-xl mx-auto w-full">
+  
+           <a href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
+             target="_blank"
+             rel="noopener noreferrer"
+             className="flex items-center justify-between w-full p-4 rounded-xl bg-brand-500/10 border border-brand-500/30 hover:bg-brand-500/20 transition-all group">
+           <div className="text-left">
+            <div className="text-xs text-brand-400 mb-1">External Tool</div>
+            <div className="text-sm text-white/80 font-medium">AWPL Price Calculator</div>
+           </div>
+           <div className="text-brand-400 group-hover:translate-x-1 transition-transform text-lg">
+           </div>
+           </a>
+        </div>
+
+
       </main>
     </div>
   );
