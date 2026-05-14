@@ -17,13 +17,16 @@ export async function signUp(formData: FormData) {
     return { error: "PIN must be 4 to 6 digits." };
   }
 
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+ const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { full_name: name, awpl_id: awplId },
     },
   });
+
+  console.log("AUTH RESULT:", JSON.stringify(authData));
+  console.log("AUTH ERROR:", JSON.stringify(authError));
 
   if (authError) return { error: authError.message };
   if (!authData.user) return { error: "Could not create account. Please try again." };
