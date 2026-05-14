@@ -3,10 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+
+// Admin client bypasses rate limits
+function getAdminClient() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function signUp(formData: FormData) {
-  const supabase = createClient();
-
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const awplId = formData.get("awpl_id") as string;
@@ -17,22 +24,22 @@ export async function signUp(formData: FormData) {
     return { error: "PIN must be 4 to 6 digits." };
   }
 
- const { data: authData, error: authError } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { full_name: name, awpl_id: awplId },
-    },
-  });
+  // Use admin client to bypass email rate limit
+  const adminSupabase = getAdminClient();
 
-  console.log("AUTH RESULT:", JSON.stringify(authData));
-  console.log("AUTH ERROR:", JSON.stringify(authError));
+  const { data: authData, error: authError } =
+    await adminSupabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // auto confirm email
+      user_metadata: { full_name: name, awpl_id: awplId },
+    });
 
   if (authError) return { error: authError.message };
   if (!authData.user) return { error: "Could not create account. Please try again." };
 
-  const { error: profileError } = await supabase.from("profiles").insert({
-    id: authData.user.id,  // id = auth.users.id (Supabase standard)
+  const { error: profileError } = await adminSupabase.from("profiles").insert({
+    id: authData.user.id,
     full_name: name,
     email,
     awpl_id: awplId,
@@ -41,6 +48,15 @@ export async function signUp(formData: FormData) {
   });
 
   if (profileError) return { error: profileError.message };
+
+  // Now sign in the user normally
+  const supabase = createClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) return { error: signInError.message };
 
   revalidatePath("/", "layout");
   redirect("/dashboard");
