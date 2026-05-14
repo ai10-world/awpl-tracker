@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap");
+/* Better fonts: Inter (very readable) + Outfit (clean display) + JetBrains Mono */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -8,30 +9,28 @@
   --brand: #ff730a;
   --brand-dim: rgba(255, 115, 10, 0.12);
   --brand-glow: rgba(255, 115, 10, 0.35);
-  --surface: #0f0f0f;
-  --surface-2: #1a1a1a;
-  --surface-3: #252525;
+  --surface: #080808;
+  --surface-2: #111111;
+  --surface-3: #1c1c1c;
   --border: rgba(255, 255, 255, 0.08);
   --border-brand: rgba(255, 115, 10, 0.3);
-  --text-1: #f5f5f5;
-  --text-2: #a0a0a0;
-  --text-3: #666666;
+  --text-1: #f0f0f0;
+  --text-2: #a8a8a8;
+  --text-3: #606060;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
   background: var(--surface);
   color: var(--text-1);
-  font-family: "DM Sans", sans-serif;
+  /* Inter — highly readable for body text */
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 /* Grain overlay */
@@ -42,33 +41,26 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: var(--surface);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--surface-3);
-  border-radius: 2px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 2px; }
 
-/* Input resets */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset;
-  -webkit-text-fill-color: #f5f5f5;
+  -webkit-box-shadow: 0 0 0px 1000px #111111 inset;
+  -webkit-text-fill-color: #f0f0f0;
   transition: background-color 5000s ease-in-out 0s;
 }
 
 @layer utilities {
+  /* Outfit for headings — clean, modern, very readable */
   .font-display {
-    font-family: "Syne", sans-serif;
+    font-family: "Outfit", sans-serif;
+    letter-spacing: -0.01em;
   }
 
   .text-gradient {
@@ -85,29 +77,59 @@ input:-webkit-autofill:focus {
   }
 
   .glow-brand {
-    box-shadow: 0 0 30px var(--brand-glow), 0 0 60px rgba(255, 115, 10, 0.1);
+    box-shadow: 0 0 24px var(--brand-glow), 0 0 48px rgba(255, 115, 10, 0.08);
   }
 
-  .animate-delay-100 {
-    animation-delay: 100ms;
-  }
-  .animate-delay-200 {
-    animation-delay: 200ms;
-  }
-  .animate-delay-300 {
-    animation-delay: 300ms;
-  }
-  .animate-delay-400 {
-    animation-delay: 400ms;
-  }
-  .animate-delay-500 {
-    animation-delay: 500ms;
-  }
-  .animate-delay-600 {
-    animation-delay: 600ms;
-  }
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .opacity-0-init { opacity: 0; }
+}
 
-  .opacity-0-init {
-    opacity: 0;
-  }
+/* Better base typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Outfit", sans-serif;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+p {
+  line-height: 1.65;
+}
+
+/* Inputs — better readability */
+input, textarea, select {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+}
+
+/* Mono for IDs and codes */
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.875em;
+  letter-spacing: 0.02em;
+}
+
+/* Animation */
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s ease forwards;
+}
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

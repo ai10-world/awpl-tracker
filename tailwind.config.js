@@ -8,8 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["'Syne'", "sans-serif"],
-        body: ["'DM Sans'", "sans-serif"],
+        display: ["'Outfit'", "sans-serif"],
+        body: ["'Inter'", "sans-serif"],
         mono: ["'JetBrains Mono'", "monospace"],
       },
       colors: {
@@ -27,22 +27,20 @@ module.exports = {
         },
         dark: {
           950: "#080808",
-          900: "#0f0f0f",
-          800: "#1a1a1a",
+          900: "#111111",
+          800: "#1c1c1c",
           700: "#252525",
           600: "#333333",
-          500: "#4a4a4a",
         },
       },
       animation: {
-        "fade-up": "fadeUp 0.6s ease forwards",
+        "fade-up": "fadeUp 0.5s ease forwards",
         "fade-in": "fadeIn 0.4s ease forwards",
         float: "float 6s ease-in-out infinite",
-        shimmer: "shimmer 2s linear infinite",
       },
       keyframes: {
         fadeUp: {
-          "0%": { opacity: 0, transform: "translateY(24px)" },
+          "0%": { opacity: 0, transform: "translateY(20px)" },
           "100%": { opacity: 1, transform: "translateY(0)" },
         },
         fadeIn: {
@@ -51,11 +49,7 @@ module.exports = {
         },
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-12px)" },
-        },
-        shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
+          "50%": { transform: "translateY(-10px)" },
         },
       },
     },
