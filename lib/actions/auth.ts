@@ -1,11 +1,9 @@
-// lib/actions/auth.ts
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-// ─── Sign Up ──────────────────────────────────────────────────────────────────
 export async function signUp(formData: FormData) {
   const supabase = createClient();
 
@@ -15,71 +13,36 @@ export async function signUp(formData: FormData) {
   const password = formData.get("password") as string;
   const pin = formData.get("pin") as string;
 
-  // Validate PIN (4–6 digits)
   if (!/^\d{4,6}$/.test(pin)) {
     return { error: "PIN must be 4 to 6 digits." };
   }
 
-  // Create auth user
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: {
-        full_name: name,
-        awpl_id: awplId,
-      },
+      data: { full_name: name, awpl_id: awplId },
     },
   });
 
-  if (authError) {
-    return { error: authError.message };
-  }
+  if (authError) return { error: authError.message };
+  if (!authData.user) return { error: "Could not create account. Please try again." };
 
-  if (!authData.user) {
-    return { error: "Could not create account. Please try again." };
-  }
+  const { error: profileError } = await supabase.from("profiles").insert({
+    id: authData.user.id,  // id = auth.users.id (Supabase standard)
+    full_name: name,
+    email,
+    awpl_id: awplId,
+    pin_hash: pin,
+    role: "member",
+  });
 
-  // Check if a profile with this AWPL ID already exists (account reconnect logic)
-  const { data: existingProfile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("awpl_id", awplId)
-    .single();
-
-  if (existingProfile) {
-    // Reconnect: update existing profile with new auth user id
-    await supabase
-      .from("profiles")
-      .update({
-        auth_user_id: authData.user.id,
-        email,
-        full_name: name,
-        pin_hash: pin, // In production: hash this with bcrypt
-        updated_at: new Date().toISOString(),
-      })
-      .eq("awpl_id", awplId);
-  } else {
-    // New profile
-    const { error: profileError } = await supabase.from("profiles").insert({
-      auth_user_id: authData.user.id,
-      full_name: name,
-      email,
-      awpl_id: awplId,
-      pin_hash: pin, // In production: hash this with bcrypt
-      role: "member",
-    });
-
-    if (profileError) {
-      return { error: profileError.message };
-    }
-  }
+  if (profileError) return { error: profileError.message };
 
   revalidatePath("/", "layout");
   redirect("/dashboard");
 }
 
-// ─── Log In ───────────────────────────────────────────────────────────────────
 export async function logIn(formData: FormData) {
   const supabase = createClient();
 
@@ -87,38 +50,26 @@ export async function logIn(formData: FormData) {
   const password = formData.get("password") as string;
   const pin = formData.get("pin") as string;
 
-  // Look up email by AWPL ID
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("email, pin_hash")
     .eq("awpl_id", awplId)
     .single();
 
-  if (profileError || !profile) {
-    return { error: "No account found with this AWPL ID." };
-  }
+  if (profileError || !profile) return { error: "No account found with this AWPL ID." };
+  if (profile.pin_hash !== pin) return { error: "Incorrect PIN." };
 
-  // Verify PIN
-  if (profile.pin_hash !== pin) {
-    // In production: use bcrypt.compare(pin, profile.pin_hash)
-    return { error: "Incorrect PIN." };
-  }
-
-  // Sign in with email + password
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: profile.email,
     password,
   });
 
-  if (signInError) {
-    return { error: signInError.message };
-  }
+  if (signInError) return { error: signInError.message };
 
   revalidatePath("/", "layout");
   redirect("/dashboard");
 }
 
-// ─── Log Out ──────────────────────────────────────────────────────────────────
 export async function logOut() {
   const supabase = createClient();
   await supabase.auth.signOut();
