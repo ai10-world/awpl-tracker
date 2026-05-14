@@ -29,12 +29,7 @@ export default async function DashboardPage() {
       <nav className="border-b border-white/5 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center text-white font-display font-bold text-xs">
-              A
-            </div>
-            <span className="font-display font-semibold text-sm text-white/80">
-              AWPL Tracker
-            </span>
+            <img src="/logo.png" alt="Asclepius" className="h-7 w-auto" />
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-white/50">

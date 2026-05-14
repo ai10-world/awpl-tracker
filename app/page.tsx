@@ -163,12 +163,7 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white font-display font-bold text-sm">
-            A
-          </div>
-          <span className="font-display font-semibold text-sm tracking-wide text-white/90">
-            AWPL Tracker
-          </span>
+          <img src="/logo.png" alt="Asclepius" className="h-8 w-auto" />
         </div>
 
         <div className="flex items-center gap-3">
@@ -373,6 +368,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative z-10 text-center py-8 text-white/20 text-xs border-t border-white/5">
         {t.footer}
+        <img src="/logo.png" alt="Asclepius" className="h-8 w-auto" />
       </footer>
     </div>
   );

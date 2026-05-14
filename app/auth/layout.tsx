@@ -29,12 +29,7 @@ export default function AuthLayout({
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white font-display font-bold text-sm">
-            A
-          </div>
-          <span className="font-display font-semibold text-sm tracking-wide text-white/80">
-            AWPL Tracker
-          </span>
+          <img src="/logo.png" alt="Asclepius" className="h-8 w-auto" />
         </Link>
       </nav>
 
