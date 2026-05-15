@@ -39,16 +39,16 @@ const content = {
     cta_secondary: "लॉग इन करें",
     features_title: "टीम के लिए सब कुछ",
     features: [
-      { icon: Users, title: "टीम मैनेजमेंट", desc: "अपनी डाउनलाइन बनाएं और व्यवस्थित करें। लीडर असाइन करें, रैंक सेट करें।" },
-      { icon: TrendingUp, title: "सेल्स ट्रैकिंग", desc: "रोज़ का टारगेट बनाम अचीवमेंट। हफ्ते और महीने की परफॉर्मेंस एक नज़र में।" },
-      { icon: ClipboardList, title: "डेली रिपोर्ट", desc: "मेंबर्स रोज़ अपडेट सबमिट करें। आप सब कुछ रियल टाइम में देखें।" },
-      { icon: Bell, title: "नोटिफिकेशन", desc: "टास्क, डेडलाइन और टीम गतिविधि के लिए तुरंत अलर्ट।" },
+      { icon: Users, title: "टीम मैनेजमेंट", desc: "अपनी डाउनलाइन बनाएं और व्यवस्थित करें।" },
+      { icon: TrendingUp, title: "सेल्स ट्रैकिंग", desc: "रोज़ का टारगेट बनाम अचीवमेंट।" },
+      { icon: ClipboardList, title: "डेली रिपोर्ट", desc: "मेंबर्स रोज़ अपडेट सबमिट करें।" },
+      { icon: Bell, title: "नोटिफिकेशन", desc: "टास्क और डेडलाइन के लिए तुरंत अलर्ट।" },
     ],
     roles_title: "हर भूमिका के लिए बना",
     roles: [
-      { icon: Shield, label: "प्लेटफ़ॉर्म एडमिन", desc: "सभी टीमों और डेटा पर पूरी नज़र।", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-      { icon: Users, label: "टीम एडमिन", desc: "अपनी टीम को शुरू से अंत तक मैनेज करें।", color: "text-brand-400", bg: "bg-brand-500/10", border: "border-brand-500/20" },
-      { icon: Star, label: "टीम लीडर", desc: "अपने ग्रुप का नेतृत्व करें, मेंबर्स की प्रगति देखें।", color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" },
+      { icon: Shield, label: "प्लेटफ़ॉर्म एडमिन", desc: "सभी टीमों पर पूरी नज़र।", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+      { icon: Users, label: "टीम एडमिन", desc: "अपनी टीम को मैनेज करें।", color: "text-brand-400", bg: "bg-brand-500/10", border: "border-brand-500/20" },
+      { icon: Star, label: "टीम लीडर", desc: "अपने ग्रुप का नेतृत्व करें।", color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" },
     ],
     footer: "AWPL नेटवर्क प्रोफेशनल्स के लिए बना।",
     lang_toggle: "View in English",
@@ -61,7 +61,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#080808] text-white overflow-x-hidden">
-      {/* Background orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-20"
           style={{ background: "radial-gradient(circle, rgba(255,115,10,0.4) 0%, transparent 70%)" }} />
@@ -69,16 +68,13 @@ export default function LandingPage() {
           style={{ background: "radial-gradient(circle, rgba(255,115,10,0.3) 0%, transparent 70%)" }} />
       </div>
 
-      {/* Nav */}
+      {/* Nav — rounded logo */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <img src="/logo.png" alt="Asclepius" className="h-10 w-auto" />
+        <img src="/logo.png" alt="Asclepius" className="h-10 w-auto rounded-xl" />
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setLang(lang === "en" ? "hi" : "en")}
-            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20"
-          >
-            <Globe size={12} />
-            {t.lang_toggle}
+          <button onClick={() => setLang(lang === "en" ? "hi" : "en")}
+            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20">
+            <Globe size={12} /> {t.lang_toggle}
           </button>
           <Link href="/auth/login" className="text-sm text-white/60 hover:text-white transition-colors px-4 py-1.5">
             {t.cta_secondary}
@@ -95,29 +91,20 @@ export default function LandingPage() {
           <div className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
           {t.badge}
         </div>
-
         <h1 className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl leading-[1.05] mb-6">
           {t.headline.map((line, i) => (
-            <span key={i} className={i === 2 ? "text-gradient" : ""}>
-              {line}{i < 2 && <br />}
-            </span>
+            <span key={i} className={i === 2 ? "text-gradient" : ""}>{line}{i < 2 && <br />}</span>
           ))}
         </h1>
-
         <p className="text-white/50 text-lg max-w-xl mx-auto mb-10 leading-relaxed">{t.sub}</p>
-
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
           <Link href="/auth/signup" className="group flex items-center gap-2 bg-brand-500 hover:bg-brand-400 text-white font-medium px-8 py-3.5 rounded-full transition-all glow-brand text-sm">
-            {t.cta_primary}
-            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            {t.cta_primary} <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link href="/auth/login" className="flex items-center gap-2 text-white/60 hover:text-white border border-white/10 hover:border-white/25 px-8 py-3.5 rounded-full transition-all text-sm">
-            {t.cta_secondary}
-            <ChevronRight size={16} />
+            {t.cta_secondary} <ChevronRight size={16} />
           </Link>
         </div>
-
-        {/* Stats */}
         <div className="flex items-center justify-center gap-8 mt-16">
           {[{ num: "4", label: "User Roles" }, { num: "13", label: "Pages" }, { num: "∞", label: "Team Members" }].map((s) => (
             <div key={s.label} className="text-center">
@@ -172,7 +159,7 @@ export default function LandingPage() {
             {lang === "en" ? "Ready to get started?" : "शुरू करने के लिए तैयार हैं?"}
           </h2>
           <p className="text-white/50 mb-8 text-sm">
-            {lang === "en" ? "Create your account with your AWPL ID. Takes less than a minute." : "अपने AWPL ID से अकाउंट बनाएं। एक मिनट से कम लगता है।"}
+            {lang === "en" ? "Create your account with your AWPL ID. Takes less than a minute." : "अपने AWPL ID से अकाउंट बनाएं।"}
           </p>
           <Link href="/auth/signup" className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-400 text-white font-medium px-8 py-3.5 rounded-full transition-all text-sm">
             {t.cta_primary} <ArrowRight size={16} />

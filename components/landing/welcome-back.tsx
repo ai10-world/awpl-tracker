@@ -25,18 +25,19 @@ export default function WelcomeBackPage({ profile }: { profile: any }) {
 
   return (
     <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center px-6">
-      {/* Background glow */}
       <div className="fixed inset-0 pointer-events-none">
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(255,115,10,0.6) 0%, transparent 70%)" }}
-        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, rgba(255,115,10,0.6) 0%, transparent 70%)" }} />
       </div>
 
       <div className="relative z-10 w-full max-w-sm text-center">
-        {/* Logo */}
+        {/* Logo — with corner radius */}
         <div className="flex justify-center mb-10">
-          <img src="/logo.png" alt="Asclepius" className="h-12 w-auto" />
+          <img
+            src="/logo.png"
+            alt="Asclepius"
+            className="h-12 w-auto rounded-2xl"
+          />
         </div>
 
         {/* Greeting */}
@@ -52,50 +53,35 @@ export default function WelcomeBackPage({ profile }: { profile: any }) {
         </div>
 
         {/* Main CTA */}
-        <Link
-          href="/dashboard"
-          className="group flex items-center justify-center gap-2 w-full bg-brand-500 hover:bg-brand-400 text-white font-semibold py-3.5 rounded-2xl transition-all mb-3 text-sm"
-        >
+        <Link href="/dashboard"
+          className="group flex items-center justify-center gap-2 w-full bg-brand-500 hover:bg-brand-400 text-white font-semibold py-3.5 rounded-2xl transition-all mb-3 text-sm">
           Go to Dashboard
           <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
         </Link>
 
         {/* Quick Links */}
         <div className="grid grid-cols-2 gap-2 mb-6">
-          <Link
-            href="/team"
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-white/20 text-white/50 hover:text-white text-xs transition-all"
-          >
-            <Users size={13} />
-            My Teams
+          <Link href="/team"
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-white/20 text-white/50 hover:text-white text-xs transition-all">
+            <Users size={13} /> My Teams
           </Link>
           {role === "platform_admin" && (
-            <Link
-              href="/admin"
-              className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-blue-500/30 text-white/50 hover:text-blue-400 text-xs transition-all"
-            >
-              <Shield size={13} />
-              Admin Panel
+            <Link href="/admin"
+              className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-blue-500/30 text-white/50 hover:text-blue-400 text-xs transition-all">
+              <Shield size={13} /> Admin Panel
             </Link>
           )}
-          <a
-            href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-white/20 text-white/50 hover:text-white text-xs transition-all"
-          >
-            <Calculator size={13} />
-            Calculator
+          <a href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
+            target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-white/20 text-white/50 hover:text-white text-xs transition-all">
+            <Calculator size={13} /> Calculator
           </a>
         </div>
 
         {/* Sign out */}
-        <button
-          onClick={() => logOut()}
-          className="flex items-center justify-center gap-1.5 text-xs text-white/20 hover:text-white/40 transition-colors mx-auto"
-        >
-          <LogOut size={12} />
-          Sign out
+        <button onClick={() => logOut()}
+          className="flex items-center justify-center gap-1.5 text-xs text-white/20 hover:text-white/40 transition-colors mx-auto">
+          <LogOut size={12} /> Sign out
         </button>
       </div>
     </div>
