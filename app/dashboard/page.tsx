@@ -143,6 +143,8 @@ export default async function DashboardPage() {
                   <ExternalLink size={12} className="text-white/20 group-hover:text-brand-400 transition-colors flex-shrink-0" />
                 </a>
 
+                <QuickLink href="/reports" icon={ClipboardList} label="Reports" desc="View and manage reports" hoverColor="brand" />
+
                 {/* Coming soon */}
                 {[
                   { label: "Daily Reports", desc: "Phase 3" },
