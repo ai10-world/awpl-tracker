@@ -10,13 +10,9 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
+        getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -26,28 +22,21 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session if expired
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  // Protected routes
-  const protectedRoutes = ["/dashboard", "/team", "/tasks", "/reports"];
-  const authRoutes = ["/auth/login", "/auth/signup"];
+  const protectedRoutes = ["/dashboard", "/team", "/tasks", "/reports", "/admin"];
+  const authRoutes = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-pin"];
 
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r));
   const isAuthRoute = authRoutes.some((r) => pathname.startsWith(r));
 
-  // Redirect unauthenticated users away from protected routes
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
