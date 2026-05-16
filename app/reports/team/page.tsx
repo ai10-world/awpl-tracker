@@ -4,7 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/ui/signout-button";
-import { ArrowLeft, ClipboardList, TrendingUp, Phone, Users, UserPlus, CheckCircle } from "lucide-react";
+import { ArrowLeft, ClipboardList, CheckCircle, Star } from "lucide-react";
 import { ReportReviewButton } from "@/components/reports/review-button";
 
 function getAdminClient() {
@@ -38,11 +38,10 @@ export default async function TeamReportsPage({
     .from("profiles").select("*").eq("id", user.id).single();
   if (!profile) redirect("/auth/login");
 
-  // Only team admin, team leader, platform admin can see team reports
   const allowed = ["platform_admin", "team_admin", "team_leader"];
   if (!allowed.includes(profile.role)) redirect("/reports");
 
-  // Get teams user manages
+  // Get managed teams
   let managedTeams: any[] = [];
   if (profile.role === "platform_admin") {
     const { data } = await adminSupabase.from("teams").select("id, name").order("name");
@@ -58,9 +57,8 @@ export default async function TeamReportsPage({
 
   const selectedTeamId = searchParams.team || managedTeams[0]?.id;
   const selectedDate = searchParams.date || new Date().toISOString().split("T")[0];
-  const selectedTeam = managedTeams.find((t) => t.id === selectedTeamId);
 
-  // Fetch reports for selected team and date
+  // Fetch reports
   let reports: any[] = [];
   if (selectedTeamId) {
     const { data } = await adminSupabase
@@ -72,7 +70,7 @@ export default async function TeamReportsPage({
     reports = data || [];
   }
 
-  // Fetch all members of selected team to show who hasn't submitted
+  // All members
   let allMembers: any[] = [];
   if (selectedTeamId) {
     const { data } = await adminSupabase
@@ -84,11 +82,7 @@ export default async function TeamReportsPage({
 
   const submittedIds = new Set(reports.map((r) => r.profile_id));
   const notSubmitted = allMembers.filter((m) => !submittedIds.has(m.id));
-
-  // Team stats for selected date
-  const totalSales = reports.reduce((s, r) => s + (r.sales_count || 0), 0);
-  const totalCalls = reports.reduce((s, r) => s + (r.calls_made || 0), 0);
-  const totalRecruits = reports.reduce((s, r) => s + (r.new_recruits || 0), 0);
+  const totalSP = reports.reduce((s, r) => s + (r.sp || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#080808] text-white">
@@ -113,12 +107,9 @@ export default async function TeamReportsPage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display font-bold text-2xl mb-0.5">Team Reports</h1>
-            <p className="text-white/35 text-sm">Review your team&apos;s daily submissions</p>
+            <p className="text-white/35 text-sm">आज की रिपोर्टिंग — Daily submissions</p>
           </div>
-
-          {/* Filters */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Team selector */}
             {managedTeams.length > 1 && (
               <form method="GET">
                 <input type="hidden" name="date" value={selectedDate} />
@@ -131,39 +122,31 @@ export default async function TeamReportsPage({
                 </select>
               </form>
             )}
-
-            {/* Date selector */}
             <form method="GET">
               <input type="hidden" name="team" value={selectedTeamId} />
-              <input
-                type="date"
-                name="date"
-                defaultValue={selectedDate}
+              <input type="date" name="date" defaultValue={selectedDate}
                 max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => { const f = e.target.closest("form") as HTMLFormElement; f?.submit(); }}
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
-              />
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
             </form>
           </div>
         </div>
 
-        {/* Summary row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {/* Summary */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
           <div className="p-3 rounded-xl bg-white/3 border border-white/8">
             <div className="font-display font-bold text-xl">{reports.length}/{allMembers.length}</div>
-            <div className="text-xs text-white/30">Submitted</div>
+            <div className="text-xs text-white/30">Submitted Today</div>
           </div>
           <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-            <div className="font-display font-bold text-xl text-brand-400">{totalSales}</div>
-            <div className="text-xs text-white/30">Total Sales</div>
+            <div className="font-display font-bold text-xl text-yellow-400 flex items-center gap-1">
+              ⭐ {totalSP}
+            </div>
+            <div className="text-xs text-white/30">Total SP Today</div>
           </div>
           <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-            <div className="font-display font-bold text-xl text-blue-400">{totalCalls}</div>
-            <div className="text-xs text-white/30">Total Calls</div>
-          </div>
-          <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-            <div className="font-display font-bold text-xl text-green-400">{totalRecruits}</div>
-            <div className="text-xs text-white/30">Recruits</div>
+            <div className="font-display font-bold text-xl text-red-400">{notSubmitted.length}</div>
+            <div className="text-xs text-white/30">Not Submitted</div>
           </div>
         </div>
 
@@ -178,7 +161,8 @@ export default async function TeamReportsPage({
             ) : (
               reports.map((r) => (
                 <div key={r.id} className="p-4 rounded-2xl bg-white/3 border border-white/8">
-                  <div className="flex items-start justify-between gap-3 mb-3">
+                  {/* Member info */}
+                  <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-white/8 flex items-center justify-center font-display font-semibold text-xs text-white/60 flex-shrink-0">
                         {r.profile?.full_name?.[0]?.toUpperCase()}
@@ -190,33 +174,44 @@ export default async function TeamReportsPage({
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <span className="text-lg">{moodEmoji[r.mood]}</span>
+                      {r.sp > 0 && (
+                        <span className="text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-full">
+                          ⭐ {r.sp}
+                        </span>
+                      )}
                       <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColor[r.status]}`}>
                         {r.status}
                       </span>
                     </div>
                   </div>
 
-                  {r.title && (
-                    <p className="text-xs text-white/40 font-medium mb-1">{r.title}</p>
-                  )}
-                  <p className="text-sm text-white/60 leading-relaxed mb-3">{r.content}</p>
+                  {/* AWPL report format */}
+                  <div className="space-y-2.5 text-sm mb-4">
+                    {r.plan && (
+                      <div className="flex gap-2">
+                        <span className="text-brand-400 font-semibold flex-shrink-0">📋 Plan —</span>
+                        <span className="text-white/60 leading-relaxed">{r.plan}</span>
+                      </div>
+                    )}
+                    {r.follow_up && (
+                      <div className="flex gap-2">
+                        <span className="text-blue-400 font-semibold flex-shrink-0">🔄 Follow Up —</span>
+                        <span className="text-white/60 leading-relaxed">{r.follow_up}</span>
+                      </div>
+                    )}
+                    {r.sign_up && (
+                      <div className="flex gap-2">
+                        <span className="text-green-400 font-semibold flex-shrink-0">✅ Sign Up —</span>
+                        <span className="text-white/60 leading-relaxed">{r.sign_up}</span>
+                      </div>
+                    )}
+                  </div>
 
-                  {(r.sales_count > 0 || r.calls_made > 0 || r.meetings_done > 0 || r.new_recruits > 0) && (
-                    <div className="flex items-center gap-4 text-xs text-white/30 mb-3 pb-3 border-b border-white/5">
-                      {r.sales_count > 0 && <span className="flex items-center gap-1"><TrendingUp size={11} /> {r.sales_count}</span>}
-                      {r.calls_made > 0 && <span className="flex items-center gap-1"><Phone size={11} /> {r.calls_made}</span>}
-                      {r.meetings_done > 0 && <span className="flex items-center gap-1"><Users size={11} /> {r.meetings_done}</span>}
-                      {r.new_recruits > 0 && <span className="flex items-center gap-1"><UserPlus size={11} /> {r.new_recruits}</span>}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
                     <span className="text-xs text-white/20">
                       {new Date(r.submitted_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                     </span>
-                    {r.status === "submitted" && (
-                      <ReportReviewButton reportId={r.id} />
-                    )}
+                    {r.status === "submitted" && <ReportReviewButton reportId={r.id} />}
                   </div>
                 </div>
               ))
@@ -231,12 +226,12 @@ export default async function TeamReportsPage({
               </h3>
               {notSubmitted.length === 0 ? (
                 <div className="flex items-center gap-2 text-xs text-green-400">
-                  <CheckCircle size={13} /> Everyone submitted today! 🎉
+                  <CheckCircle size={13} /> सबने रिपोर्ट भेजी! 🎉
                 </div>
               ) : (
                 <div className="space-y-2">
                   {notSubmitted.map((m) => (
-                    <div key={m.id} className="flex items-center gap-2.5 py-1.5">
+                    <div key={m.id} className="flex items-center gap-2 py-1.5">
                       <div className="w-6 h-6 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xs text-red-400/60 flex-shrink-0">
                         {m.full_name?.[0]?.toUpperCase()}
                       </div>

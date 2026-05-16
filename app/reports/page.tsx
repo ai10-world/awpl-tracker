@@ -4,7 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/ui/signout-button";
-import { ArrowLeft, Plus, ClipboardList, TrendingUp, Phone, Users, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, ClipboardList, Star } from "lucide-react";
 
 function getAdminClient() {
   return createAdminClient(
@@ -40,7 +40,6 @@ export default async function MyReportsPage() {
     .from("profiles").select("*").eq("id", user.id).single();
   if (!profile) redirect("/auth/login");
 
-  // Fetch my reports with team name
   const { data: reports } = await adminSupabase
     .from("reports")
     .select(`*, team:teams(name)`)
@@ -50,11 +49,8 @@ export default async function MyReportsPage() {
 
   const today = new Date().toISOString().split("T")[0];
   const todayReport = reports?.find((r) => r.report_date === today);
-
-  // Total stats
-  const totalSales = reports?.reduce((s, r) => s + (r.sales_count || 0), 0) || 0;
-  const totalCalls = reports?.reduce((s, r) => s + (r.calls_made || 0), 0) || 0;
-  const totalRecruits = reports?.reduce((s, r) => s + (r.new_recruits || 0), 0) || 0;
+  const totalSP = reports?.reduce((s, r) => s + (r.sp || 0), 0) || 0;
+  const totalReports = reports?.length || 0;
 
   return (
     <div className="min-h-screen bg-[#080808] text-white">
@@ -88,7 +84,7 @@ export default async function MyReportsPage() {
           </Link>
         </div>
 
-        {/* Today's status banner */}
+        {/* Today status */}
         {!todayReport ? (
           <div className="flex items-center justify-between p-4 rounded-2xl bg-brand-500/8 border border-brand-500/20 mb-6">
             <div className="flex items-center gap-3">
@@ -96,8 +92,8 @@ export default async function MyReportsPage() {
                 <ClipboardList size={15} className="text-brand-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-brand-300">Report not submitted yet</p>
-                <p className="text-xs text-white/30">Submit your daily report for today</p>
+                <p className="text-sm font-medium text-brand-300">आज की रिपोर्ट अभी बाकी है</p>
+                <p className="text-xs text-white/30">Today&apos;s report not submitted yet</p>
               </div>
             </div>
             <Link href="/reports/submit"
@@ -110,8 +106,8 @@ export default async function MyReportsPage() {
             <div className="flex items-center gap-3">
               <span className="text-2xl">{moodEmoji[todayReport.mood] || "📋"}</span>
               <div>
-                <p className="text-sm font-medium text-green-300">Today&apos;s report submitted ✓</p>
-                <p className="text-xs text-white/30">{todayReport.title || "Daily Report"} · {todayReport.team?.name}</p>
+                <p className="text-sm font-medium text-green-300">आज की रिपोर्ट सबमिट हो गई ✓</p>
+                <p className="text-xs text-white/30">{todayReport.team?.name} · SP: {todayReport.sp}</p>
               </div>
             </div>
             <Link href="/reports/submit"
@@ -122,30 +118,25 @@ export default async function MyReportsPage() {
         )}
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { icon: TrendingUp, label: "Total Sales", value: totalSales, color: "brand" },
-            { icon: Phone, label: "Total Calls", value: totalCalls, color: "blue" },
-            { icon: UserPlus, label: "Recruits", value: totalRecruits, color: "green" },
-          ].map((s) => {
-            const Icon = s.icon;
-            const colors: Record<string, string> = {
-              brand: "text-brand-400 bg-brand-500/10 border-brand-500/15",
-              blue: "text-blue-400 bg-blue-500/10 border-blue-500/15",
-              green: "text-green-400 bg-green-500/10 border-green-500/15",
-            };
-            return (
-              <div key={s.label} className="p-3 rounded-xl bg-white/3 border border-white/8 flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 ${colors[s.color]}`}>
-                  <Icon size={13} />
-                </div>
-                <div>
-                  <div className="font-display font-bold text-lg leading-none">{s.value}</div>
-                  <div className="text-xs text-white/30 truncate">{s.label}</div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-white/3 border border-white/8 flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/15 flex items-center justify-center flex-shrink-0">
+              <Star size={13} className="text-yellow-400" />
+            </div>
+            <div>
+              <div className="font-display font-bold text-lg leading-none">{totalSP}</div>
+              <div className="text-xs text-white/30">Total SP</div>
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-white/3 border border-white/8 flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-brand-500/10 border border-brand-500/15 flex items-center justify-center flex-shrink-0">
+              <ClipboardList size={13} className="text-brand-400" />
+            </div>
+            <div>
+              <div className="font-display font-bold text-lg leading-none">{totalReports}</div>
+              <div className="text-xs text-white/30">Total Reports</div>
+            </div>
+          </div>
         </div>
 
         {/* Reports List */}
@@ -162,47 +153,58 @@ export default async function MyReportsPage() {
           <div className="space-y-3">
             {reports.map((r) => (
               <div key={r.id} className="p-4 rounded-2xl bg-white/3 border border-white/8 hover:border-white/12 transition-all">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-lg">{moodEmoji[r.mood] || "📋"}</span>
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{moodEmoji[r.mood] || "📋"}</span>
                     <div>
-                      <div className="font-medium text-sm">{r.title || "Daily Report"}</div>
-                      <div className="text-xs text-white/30">
+                      <div className="text-xs font-medium text-white/60">
                         {new Date(r.report_date).toLocaleDateString("en-IN", {
-                          weekday: "short", day: "numeric", month: "short",
-                        })} · {r.team?.name}
+                          weekday: "long", day: "numeric", month: "short",
+                        })}
                       </div>
+                      <div className="text-xs text-white/25">{r.team?.name}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${moodColor[r.mood]}`}>
-                      {r.mood}
-                    </span>
+                    {r.sp > 0 && (
+                      <span className="flex items-center gap-1 text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-full">
+                        ⭐ {r.sp} SP
+                      </span>
+                    )}
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColor[r.status]}`}>
                       {r.status}
                     </span>
                   </div>
                 </div>
 
-                {/* Content */}
-                <p className="text-sm text-white/55 leading-relaxed line-clamp-3 mb-3">{r.content}</p>
+                {/* Report content in AWPL format */}
+                <div className="space-y-2.5 text-sm">
+                  {r.plan && (
+                    <div className="flex gap-2">
+                      <span className="text-brand-400 font-semibold flex-shrink-0">📋 Plan —</span>
+                      <span className="text-white/60 leading-relaxed">{r.plan}</span>
+                    </div>
+                  )}
+                  {r.follow_up && (
+                    <div className="flex gap-2">
+                      <span className="text-blue-400 font-semibold flex-shrink-0">🔄 Follow Up —</span>
+                      <span className="text-white/60 leading-relaxed">{r.follow_up}</span>
+                    </div>
+                  )}
+                  {r.sign_up && (
+                    <div className="flex gap-2">
+                      <span className="text-green-400 font-semibold flex-shrink-0">✅ Sign Up —</span>
+                      <span className="text-white/60 leading-relaxed">{r.sign_up}</span>
+                    </div>
+                  )}
+                </div>
 
-                {/* Metrics */}
-                {(r.sales_count > 0 || r.calls_made > 0 || r.meetings_done > 0 || r.new_recruits > 0) && (
-                  <div className="flex items-center gap-4 text-xs text-white/30 pt-3 border-t border-white/5">
-                    {r.sales_count > 0 && <span className="flex items-center gap-1"><TrendingUp size={11} /> {r.sales_count} sales</span>}
-                    {r.calls_made > 0 && <span className="flex items-center gap-1"><Phone size={11} /> {r.calls_made} calls</span>}
-                    {r.meetings_done > 0 && <span className="flex items-center gap-1"><Users size={11} /> {r.meetings_done} meetings</span>}
-                    {r.new_recruits > 0 && <span className="flex items-center gap-1"><UserPlus size={11} /> {r.new_recruits} recruits</span>}
-                  </div>
-                )}
-
-                {/* Edit button for today */}
+                {/* Edit today */}
                 {r.report_date === today && (
                   <div className="mt-3 pt-3 border-t border-white/5">
-                    <Link href="/reports/submit"
-                      className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
-                      Edit today's report →
+                    <Link href="/reports/submit" className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                      Edit today&apos;s report →
                     </Link>
                   </div>
                 )}

@@ -4,22 +4,68 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { submitReport } from "@/lib/actions/reports";
-import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft, Loader2, CheckCircle, AlertCircle,
-  Smile, Meh, Frown, TrendingUp, Phone, Users, UserPlus,
-  ClipboardList, Edit3,
+  ClipboardList, Edit3, Globe,
 } from "lucide-react";
 
 const moods = [
-  { value: "great", label: "Great", icon: "🚀", color: "border-green-500/40 bg-green-500/10 text-green-400" },
-  { value: "good", label: "Good", icon: "😊", color: "border-blue-500/40 bg-blue-500/10 text-blue-400" },
-  { value: "neutral", label: "Neutral", icon: "😐", color: "border-white/20 bg-white/5 text-white/50" },
-  { value: "difficult", label: "Difficult", icon: "😓", color: "border-yellow-500/40 bg-yellow-500/10 text-yellow-400" },
-  { value: "bad", label: "Bad", icon: "😞", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+  { value: "great", icon: "🚀", label: { en: "Great", hi: "शानदार" }, color: "border-green-500/40 bg-green-500/10 text-green-400" },
+  { value: "good", icon: "😊", label: { en: "Good", hi: "अच्छा" }, color: "border-blue-500/40 bg-blue-500/10 text-blue-400" },
+  { value: "neutral", icon: "😐", label: { en: "Neutral", hi: "ठीक है" }, color: "border-white/20 bg-white/5 text-white/50" },
+  { value: "difficult", icon: "😓", label: { en: "Difficult", hi: "मुश्किल" }, color: "border-yellow-500/40 bg-yellow-500/10 text-yellow-400" },
+  { value: "bad", icon: "😞", label: { en: "Bad", hi: "खराब" }, color: "border-red-500/40 bg-red-500/10 text-red-400" },
 ];
 
+const text = {
+  en: {
+    greeting: "Dear Fighter",
+    subtitle: "Send Today's Reporting",
+    plan: "Plan",
+    followUp: "Follow Up",
+    signUp: "Sign Up",
+    sp: "SP (Sales Points)",
+    spHint: "Enter your sales points for today",
+    mood: "How was your day?",
+    submit: "Submit Report",
+    update: "Update Report",
+    submitting: "Submitting…",
+    updating: "Updating…",
+    teamLabel: "Submitting for team",
+    editedToday: "Report submitted today. You can edit it until midnight.",
+    atLeastOne: "Please fill at least one field.",
+    toggle: "हिंदी में",
+    planPlaceholder: "What did you plan today?",
+    followUpPlaceholder: "Who did you follow up with?",
+    signUpPlaceholder: "Who signed up today?",
+  },
+  hi: {
+    greeting: "डियर फाइटर",
+    subtitle: "आज की रिपोर्टिंग भेजें",
+    plan: "Plan",
+    followUp: "Follow Up",
+    signUp: "Sign Up",
+    sp: "SP (सेल्स पॉइंट्स)",
+    spHint: "आज के सेल्स पॉइंट्स लिखें",
+    mood: "आज का दिन कैसा रहा?",
+    submit: "रिपोर्ट भेजें",
+    update: "रिपोर्ट अपडेट करें",
+    submitting: "भेजा जा रहा है…",
+    updating: "अपडेट हो रहा है…",
+    teamLabel: "टीम चुनें",
+    editedToday: "आज की रिपोर्ट सबमिट हो गई है। आप इसे रात 12 बजे तक बदल सकते हैं।",
+    atLeastOne: "कम से कम एक फील्ड भरें।",
+    toggle: "In English",
+    planPlaceholder: "आज क्या प्लान किया?",
+    followUpPlaceholder: "किससे फॉलो अप किया?",
+    signUpPlaceholder: "आज किसने साइन अप किया?",
+  },
+};
+
 export default function SubmitReportPage() {
+  const [lang, setLang] = useState<"en" | "hi">("hi");
+  const t = text[lang];
+
   const [teams, setTeams] = useState<any[]>([]);
   const [selectedTeam, setSelectedTeam] = useState("");
   const [existingReport, setExistingReport] = useState<any>(null);
@@ -29,19 +75,13 @@ export default function SubmitReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const today = new Date().toLocaleDateString("en-IN", {
+  const today = new Date().toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
-  const todayISO = new Date().toISOString().split("T")[0];
 
-  // Fetch user's teams
   useEffect(() => {
     const fetchTeams = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const res = await fetch(`/api/reports/my-teams`);
+      const res = await fetch("/api/reports/my-teams");
       const data = await res.json();
       setTeams(data.teams || []);
       if (data.teams?.length > 0) setSelectedTeam(data.teams[0].team_id);
@@ -50,7 +90,6 @@ export default function SubmitReportPage() {
     fetchTeams();
   }, []);
 
-  // Fetch existing report when team changes
   useEffect(() => {
     if (!selectedTeam) return;
     const fetchExisting = async () => {
@@ -80,7 +119,6 @@ export default function SubmitReportPage() {
     if (result?.error) setError(result.error);
     if (result?.success) {
       setSuccess(result.success);
-      // Refresh existing report
       const res = await fetch(`/api/reports/today?team_id=${selectedTeam}`);
       const data = await res.json();
       if (data.report) setExistingReport(data.report);
@@ -89,44 +127,64 @@ export default function SubmitReportPage() {
 
   return (
     <div className="min-h-screen bg-[#080808] text-white">
+      {/* Nav */}
       <nav className="border-b border-white/5 px-4 sm:px-6 py-3 sticky top-0 bg-[#080808]/90 backdrop-blur-md z-10">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link href="/dashboard">
             <img src="/logo.png" alt="Asclepius" className="h-8 w-auto rounded-lg" />
           </Link>
-          <Link href="/reports" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors">
-            <ClipboardList size={13} /> My Reports
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* Language toggle */}
+            <button
+              onClick={() => setLang(lang === "en" ? "hi" : "en")}
+              className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 border border-white/10 hover:border-white/25 px-3 py-1.5 rounded-full transition-all"
+            >
+              <Globe size={12} />
+              {t.toggle}
+            </button>
+            <Link href="/reports" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors">
+              <ClipboardList size={13} />
+              <span className="hidden sm:inline">My Reports</span>
+            </Link>
+          </div>
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
         <Link href="/dashboard" className="flex items-center gap-2 text-white/30 hover:text-white/60 text-sm mb-6 transition-colors">
           <ArrowLeft size={15} /> Dashboard
         </Link>
 
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
-              {existingReport ? <Edit3 size={14} className="text-brand-400" /> : <ClipboardList size={14} className="text-brand-400" />}
+        {/* AWPL Header Card */}
+        <div className="relative overflow-hidden rounded-3xl p-6 mb-6 text-center"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,115,10,0.18) 0%, rgba(255,115,10,0.06) 100%)",
+            border: "1px solid rgba(255,115,10,0.3)",
+          }}>
+          <div className="absolute inset-0 opacity-20"
+            style={{ background: "radial-gradient(ellipse at top, rgba(255,115,10,0.4) 0%, transparent 70%)" }} />
+          <div className="relative">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              {existingReport
+                ? <Edit3 size={16} className="text-brand-400" />
+                : <ClipboardList size={16} className="text-brand-400" />}
             </div>
-            <h1 className="font-display font-bold text-xl">
-              {existingReport ? "Edit Today's Report" : "Submit Daily Report"}
+            <h1 className={`font-display font-bold text-2xl text-white mb-0.5 ${lang === "hi" ? "text-3xl" : ""}`}>
+              *{t.greeting}*
             </h1>
+            <p className={`text-brand-300/80 font-medium ${lang === "hi" ? "text-base" : "text-sm"}`}>
+              *{t.subtitle}*
+            </p>
+            <p className="text-white/30 text-xs mt-2">{today}</p>
           </div>
-          <p className="text-white/35 text-sm ml-10">{today}</p>
         </div>
 
         {/* Team Selector */}
         {teams.length > 1 && (
-          <div className="mb-5">
-            <label className="block text-xs text-white/40 mb-1.5 font-medium">Submitting for team</label>
-            <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="w-full sm:w-auto bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-500/40"
-            >
+          <div className="mb-4">
+            <label className="block text-xs text-white/40 mb-1.5 font-medium">{t.teamLabel}</label>
+            <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500/40">
               {teams.map((t: any) => (
                 <option key={t.team_id} value={t.team_id}>{t.team_name}</option>
               ))}
@@ -134,117 +192,120 @@ export default function SubmitReportPage() {
           </div>
         )}
 
+        {/* Already submitted banner */}
         {existingReport && (
-          <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2 mb-5">
+          <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-4">
             <CheckCircle size={13} />
-            Report submitted today. You can edit it until midnight.
+            {t.editedToday}
           </div>
         )}
 
         {error && (
-          <div className="flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-5">
-            <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
-            {error}
+          <div className="flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-4">
+            <AlertCircle size={15} className="flex-shrink-0 mt-0.5" /> {error}
           </div>
         )}
 
         {success && (
-          <div className="flex items-center gap-2 text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 mb-5">
-            <CheckCircle size={15} />
-            {success}
+          <div className="flex items-center gap-2 text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 mb-4">
+            <CheckCircle size={15} /> {success}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           {/* Mood */}
-          <div>
-            <label className="block text-xs text-white/40 mb-2 font-medium">How was your day?</label>
+          <div className="p-4 rounded-2xl bg-white/3 border border-white/8">
+            <label className="block text-xs text-white/40 mb-3 font-medium">{t.mood}</label>
             <div className="flex gap-2 flex-wrap">
               {moods.map((m) => (
-                <button
-                  key={m.value}
-                  type="button"
-                  onClick={() => setMood(m.value)}
+                <button key={m.value} type="button" onClick={() => setMood(m.value)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
                     mood === m.value ? m.color : "border-white/8 bg-white/3 text-white/30 hover:border-white/20"
-                  }`}
-                >
+                  }`}>
                   <span>{m.icon}</span>
-                  {m.label}
+                  {m.label[lang]}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-xs text-white/40 mb-1.5 font-medium">
-              Report Title <span className="text-white/20 font-normal">(optional)</span>
-            </label>
-            <input
-              name="title"
-              type="text"
-              defaultValue={existingReport?.title || ""}
-              placeholder="e.g. Morning field visit, Product demo session…"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-all"
-            />
-          </div>
+          {/* Report Fields */}
+          <div className="rounded-2xl bg-white/3 border border-white/8 overflow-hidden divide-y divide-white/5">
 
-          {/* Main Content */}
-          <div>
-            <label className="block text-xs text-white/40 mb-1.5 font-medium">
-              Daily Report <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              name="content"
-              required
-              rows={6}
-              defaultValue={existingReport?.content || ""}
-              placeholder="Write what you did today — visits, calls, demos, follow-ups, challenges, plans for tomorrow…"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-all resize-none leading-relaxed"
-            />
-          </div>
+            {/* Plan */}
+            <div className="p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/70 mb-2">
+                <span className="text-brand-400">📋</span>
+                {t.plan} —
+              </label>
+              <textarea
+                name="plan"
+                rows={2}
+                defaultValue={existingReport?.plan || ""}
+                placeholder={t.planPlaceholder}
+                className="w-full bg-transparent text-sm text-white placeholder:text-white/20 focus:outline-none resize-none leading-relaxed"
+              />
+            </div>
 
-          {/* Metrics */}
-          <div>
-            <label className="block text-xs text-white/40 mb-2 font-medium">
-              Today&apos;s Numbers <span className="text-white/20 font-normal">(optional)</span>
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { name: "sales_count", label: "Sales", icon: TrendingUp, default: existingReport?.sales_count || 0 },
-                { name: "calls_made", label: "Calls", icon: Phone, default: existingReport?.calls_made || 0 },
-                { name: "meetings_done", label: "Meetings", icon: Users, default: existingReport?.meetings_done || 0 },
-                { name: "new_recruits", label: "Recruits", icon: UserPlus, default: existingReport?.new_recruits || 0 },
-              ].map((metric) => {
-                const Icon = metric.icon;
-                return (
-                  <div key={metric.name} className="bg-white/3 border border-white/8 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <Icon size={12} className="text-white/30" />
-                      <label className="text-xs text-white/35">{metric.label}</label>
-                    </div>
-                    <input
-                      name={metric.name}
-                      type="number"
-                      min="0"
-                      defaultValue={metric.default}
-                      className="w-full bg-transparent text-lg font-display font-bold text-white focus:outline-none"
-                    />
-                  </div>
-                );
-              })}
+            {/* Follow Up */}
+            <div className="p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/70 mb-2">
+                <span className="text-blue-400">🔄</span>
+                {t.followUp} —
+              </label>
+              <textarea
+                name="follow_up"
+                rows={2}
+                defaultValue={existingReport?.follow_up || ""}
+                placeholder={t.followUpPlaceholder}
+                className="w-full bg-transparent text-sm text-white placeholder:text-white/20 focus:outline-none resize-none leading-relaxed"
+              />
+            </div>
+
+            {/* Sign Up */}
+            <div className="p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/70 mb-2">
+                <span className="text-green-400">✅</span>
+                {t.signUp} —
+              </label>
+              <textarea
+                name="sign_up"
+                rows={2}
+                defaultValue={existingReport?.sign_up || ""}
+                placeholder={t.signUpPlaceholder}
+                className="w-full bg-transparent text-sm text-white placeholder:text-white/20 focus:outline-none resize-none leading-relaxed"
+              />
+            </div>
+
+            {/* SP */}
+            <div className="p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/70 mb-2">
+                <span className="text-yellow-400">⭐</span>
+                {t.sp} —
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  name="sp"
+                  type="number"
+                  min="0"
+                  defaultValue={existingReport?.sp || 0}
+                  className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-lg font-display font-bold text-brand-400 focus:outline-none focus:border-brand-500/40 text-center"
+                />
+                <span className="text-xs text-white/25">{t.spHint}</span>
+              </div>
             </div>
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading || fetching || !selectedTeam}
-            className="w-full bg-brand-500 hover:bg-brand-400 disabled:opacity-50 text-white font-medium py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+            className="w-full bg-brand-500 hover:bg-brand-400 disabled:opacity-50 text-white font-semibold py-3.5 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
           >
             {loading
-              ? <><Loader2 size={15} className="animate-spin" /> {existingReport ? "Updating…" : "Submitting…"}</>
-              : existingReport ? "Update Report" : "Submit Report"
+              ? <><Loader2 size={15} className="animate-spin" /> {existingReport ? t.updating : t.submitting}</>
+              : existingReport ? t.update : t.submit
             }
           </button>
         </form>

@@ -24,15 +24,15 @@ export async function submitReport(formData: FormData) {
   if (!user) return { error: "Not authenticated" };
 
   const teamId = formData.get("team_id") as string;
-  const content = (formData.get("content") as string)?.trim();
-  const title = (formData.get("title") as string)?.trim();
+  const plan = (formData.get("plan") as string)?.trim();
+  const followUp = (formData.get("follow_up") as string)?.trim();
+  const signUp = (formData.get("sign_up") as string)?.trim();
+  const sp = parseInt(formData.get("sp") as string) || 0;
   const mood = formData.get("mood") as string || "neutral";
-  const salesCount = parseInt(formData.get("sales_count") as string) || 0;
-  const callsMade = parseInt(formData.get("calls_made") as string) || 0;
-  const meetingsDone = parseInt(formData.get("meetings_done") as string) || 0;
-  const newRecruits = parseInt(formData.get("new_recruits") as string) || 0;
 
-  if (!content) return { error: "Report content is required." };
+  if (!plan && !followUp && !signUp) {
+    return { error: "Please fill at least one field in your report." };
+  }
   if (!teamId) return { error: "Team is required." };
 
   // Check member belongs to team
@@ -57,17 +57,14 @@ export async function submitReport(formData: FormData) {
     .single();
 
   if (existing) {
-    // Update existing report
     const { error } = await adminSupabase
       .from("reports")
       .update({
-        content,
-        title: title || null,
+        plan: plan || null,
+        follow_up: followUp || null,
+        sign_up: signUp || null,
+        sp,
         mood,
-        sales_count: salesCount,
-        calls_made: callsMade,
-        meetings_done: meetingsDone,
-        new_recruits: newRecruits,
         updated_at: new Date().toISOString(),
       })
       .eq("id", existing.id);
@@ -76,20 +73,17 @@ export async function submitReport(formData: FormData) {
     revalidatePath("/reports");
     return { success: "Report updated successfully!" };
   } else {
-    // Insert new report
     const { error } = await adminSupabase
       .from("reports")
       .insert({
         profile_id: user.id,
         team_id: teamId,
         report_date: today,
-        content,
-        title: title || null,
+        plan: plan || null,
+        follow_up: followUp || null,
+        sign_up: signUp || null,
+        sp,
         mood,
-        sales_count: salesCount,
-        calls_made: callsMade,
-        meetings_done: meetingsDone,
-        new_recruits: newRecruits,
       });
 
     if (error) return { error: error.message };
