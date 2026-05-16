@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/ui/signout-button";
 import { ArrowLeft, ClipboardList, CheckCircle, Star } from "lucide-react";
 import { ReportReviewButton } from "@/components/reports/review-button";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 function getAdminClient() {
   return createAdminClient(
@@ -18,9 +19,9 @@ const moodEmoji: Record<string, string> = {
   great: "🚀", good: "😊", neutral: "😐", difficult: "😓", bad: "😞",
 };
 const statusColor: Record<string, string> = {
-  submitted: "text-white/30 bg-white/5 border-white/10",
-  reviewed: "text-green-400 bg-green-500/10 border-green-500/20",
-  flagged: "text-red-400 bg-red-500/10 border-red-500/20",
+  submitted: "badge-gray",
+  reviewed: "badge-green",
+  flagged: "badge-red",
 };
 
 export default async function TeamReportsPage({
@@ -44,7 +45,8 @@ export default async function TeamReportsPage({
   // Get managed teams
   let managedTeams: any[] = [];
   if (profile.role === "platform_admin") {
-    const { data } = await adminSupabase.from("teams").select("id, name").order("name");
+    const { data } = await adminSupabase
+      .from("teams").select("id, name").order("name");
     managedTeams = data || [];
   } else {
     const { data } = await adminSupabase
@@ -70,7 +72,7 @@ export default async function TeamReportsPage({
     reports = data || [];
   }
 
-  // All members
+  // All members of selected team
   let allMembers: any[] = [];
   if (selectedTeamId) {
     const { data } = await adminSupabase
@@ -85,133 +87,165 @@ export default async function TeamReportsPage({
   const totalSP = reports.reduce((s, r) => s + (r.sp || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
-      <nav className="border-b border-white/5 px-4 sm:px-6 py-3 sticky top-0 bg-[#080808]/90 backdrop-blur-md z-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard">
-            <img src="/logo.png" alt="Asclepius" className="h-8 w-auto rounded-lg" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/reports" className="text-xs text-white/40 hover:text-white/70 transition-colors">My Reports</Link>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <Link href="/dashboard" className="flex items-center gap-2 text-white/30 hover:text-white/60 text-sm mb-6 transition-colors">
-          <ArrowLeft size={15} /> Dashboard
-        </Link>
+    <DashboardLayout profile={profile}>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto animate-fade-in">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display font-bold text-2xl mb-0.5">Team Reports</h1>
-            <p className="text-white/35 text-sm">आज की रिपोर्टिंग — Daily submissions</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {managedTeams.length > 1 && (
-              <form method="GET">
-                <input type="hidden" name="date" value={selectedDate} />
-                <select name="team" defaultValue={selectedTeamId}
-                  onChange={(e) => { const f = e.target.closest("form") as HTMLFormElement; f?.submit(); }}
-                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-                  {managedTeams.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </form>
-            )}
-            <form method="GET">
-              <input type="hidden" name="team" value={selectedTeamId} />
-              <input type="date" name="date" defaultValue={selectedDate}
-                max={new Date().toISOString().split("T")[0]}
-                onChange={(e) => { const f = e.target.closest("form") as HTMLFormElement; f?.submit(); }}
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
-            </form>
-          </div>
+        <div className="mb-6">
+          <h1 className="font-display font-bold text-2xl sm:text-3xl mb-1"
+            style={{ color: "var(--text-1)" }}>
+            Team Reports
+          </h1>
+          <p className="text-sm" style={{ color: "var(--text-3)" }}>
+            आज की रिपोर्टिंग — Daily submissions
+          </p>
         </div>
 
-        {/* Summary */}
+        {/* Filters — plain form, no onChange, just submit button */}
+        <form method="GET" className="flex flex-wrap items-center gap-2 mb-6">
+          {managedTeams.length > 1 && (
+            <select
+              name="team"
+              defaultValue={selectedTeamId}
+              className="rounded-xl px-3 py-2 text-sm focus:outline-none"
+              style={{
+                background: "var(--surface-3)",
+                border: "1px solid var(--border-2)",
+                color: "var(--text-1)",
+              }}
+            >
+              {managedTeams.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          )}
+
+          <input
+            type="date"
+            name="date"
+            defaultValue={selectedDate}
+            max={new Date().toISOString().split("T")[0]}
+            className="rounded-xl px-3 py-2 text-sm focus:outline-none"
+            style={{
+              background: "var(--surface-3)",
+              border: "1px solid var(--border-2)",
+              color: "var(--text-1)",
+            }}
+          />
+
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+            style={{ background: "var(--brand-500)", color: "white" }}
+          >
+            Apply
+          </button>
+        </form>
+
+        {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-            <div className="font-display font-bold text-xl">{reports.length}/{allMembers.length}</div>
-            <div className="text-xs text-white/30">Submitted Today</div>
-          </div>
-          <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-            <div className="font-display font-bold text-xl text-yellow-400 flex items-center gap-1">
-              ⭐ {totalSP}
+          <div className="card p-4">
+            <div className="font-display font-bold text-2xl mb-0.5" style={{ color: "var(--text-1)" }}>
+              {reports.length}/{allMembers.length}
             </div>
-            <div className="text-xs text-white/30">Total SP Today</div>
+            <div className="text-xs" style={{ color: "var(--text-3)" }}>Submitted Today</div>
           </div>
-          <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-            <div className="font-display font-bold text-xl text-red-400">{notSubmitted.length}</div>
-            <div className="text-xs text-white/30">Not Submitted</div>
+          <div className="card p-4">
+            <div className="font-display font-bold text-2xl mb-0.5 flex items-center gap-1.5">
+              <span style={{ color: "#fbbf24" }}>⭐</span>
+              <span style={{ color: "var(--text-1)" }}>{totalSP}</span>
+            </div>
+            <div className="text-xs" style={{ color: "var(--text-3)" }}>Total SP Today</div>
+          </div>
+          <div className="card p-4">
+            <div className="font-display font-bold text-2xl mb-0.5" style={{ color: notSubmitted.length > 0 ? "#f87171" : "#4ade80" }}>
+              {notSubmitted.length}
+            </div>
+            <div className="text-xs" style={{ color: "var(--text-3)" }}>Not Submitted</div>
           </div>
         </div>
 
+        {/* Main content */}
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Reports */}
+
+          {/* Reports list */}
           <div className="lg:col-span-2 space-y-3">
             {reports.length === 0 ? (
-              <div className="text-center py-12 border border-white/5 rounded-2xl">
-                <ClipboardList size={32} className="text-white/10 mx-auto mb-3" />
-                <p className="text-white/30 text-sm">No reports submitted for this date yet.</p>
+              <div className="card p-12 text-center">
+                <ClipboardList size={32} className="mx-auto mb-3" style={{ color: "var(--text-4)" }} />
+                <p className="text-sm" style={{ color: "var(--text-3)" }}>
+                  No reports submitted for this date yet.
+                </p>
               </div>
             ) : (
               reports.map((r) => (
-                <div key={r.id} className="p-4 rounded-2xl bg-white/3 border border-white/8">
+                <div key={r.id} className="card p-4 animate-fade-up">
                   {/* Member info */}
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-white/8 flex items-center justify-center font-display font-semibold text-xs text-white/60 flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-semibold text-xs flex-shrink-0"
+                        style={{ background: "var(--surface-3)", color: "var(--text-2)" }}>
                         {r.profile?.full_name?.[0]?.toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-medium text-sm">{r.profile?.full_name}</div>
-                        <div className="text-xs text-white/30 font-mono">{r.profile?.awpl_id}</div>
+                        <div className="font-medium text-sm" style={{ color: "var(--text-1)" }}>
+                          {r.profile?.full_name}
+                        </div>
+                        <div className="text-xs font-mono" style={{ color: "var(--text-3)" }}>
+                          {r.profile?.awpl_id}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-lg">{moodEmoji[r.mood]}</span>
+                      <span className="text-lg">{moodEmoji[r.mood] || "📋"}</span>
                       {r.sp > 0 && (
-                        <span className="text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-full">
-                          ⭐ {r.sp}
-                        </span>
+                        <span className="badge badge-yellow">⭐ {r.sp} SP</span>
                       )}
-                      <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColor[r.status]}`}>
+                      <span className={`badge ${statusColor[r.status] || "badge-gray"}`}>
                         {r.status}
                       </span>
                     </div>
                   </div>
 
-                  {/* AWPL report format */}
+                  {/* Report content in AWPL format */}
                   <div className="space-y-2.5 text-sm mb-4">
                     {r.plan && (
                       <div className="flex gap-2">
-                        <span className="text-brand-400 font-semibold flex-shrink-0">📋 Plan —</span>
-                        <span className="text-white/60 leading-relaxed">{r.plan}</span>
+                        <span className="font-semibold flex-shrink-0" style={{ color: "var(--brand-400)" }}>
+                          📋 Plan —
+                        </span>
+                        <span className="leading-relaxed" style={{ color: "var(--text-2)" }}>{r.plan}</span>
                       </div>
                     )}
                     {r.follow_up && (
                       <div className="flex gap-2">
-                        <span className="text-blue-400 font-semibold flex-shrink-0">🔄 Follow Up —</span>
-                        <span className="text-white/60 leading-relaxed">{r.follow_up}</span>
+                        <span className="font-semibold flex-shrink-0" style={{ color: "#60a5fa" }}>
+                          🔄 Follow Up —
+                        </span>
+                        <span className="leading-relaxed" style={{ color: "var(--text-2)" }}>{r.follow_up}</span>
                       </div>
                     )}
                     {r.sign_up && (
                       <div className="flex gap-2">
-                        <span className="text-green-400 font-semibold flex-shrink-0">✅ Sign Up —</span>
-                        <span className="text-white/60 leading-relaxed">{r.sign_up}</span>
+                        <span className="font-semibold flex-shrink-0" style={{ color: "#4ade80" }}>
+                          ✅ Sign Up —
+                        </span>
+                        <span className="leading-relaxed" style={{ color: "var(--text-2)" }}>{r.sign_up}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                    <span className="text-xs text-white/20">
-                      {new Date(r.submitted_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-3"
+                    style={{ borderTop: "1px solid var(--border-1)" }}>
+                    <span className="text-xs" style={{ color: "var(--text-4)" }}>
+                      {new Date(r.submitted_at).toLocaleTimeString("en-IN", {
+                        hour: "2-digit", minute: "2-digit",
+                      })}
                     </span>
-                    {r.status === "submitted" && <ReportReviewButton reportId={r.id} />}
+                    {r.status === "submitted" && (
+                      <ReportReviewButton reportId={r.id} />
+                    )}
                   </div>
                 </div>
               ))
@@ -220,24 +254,31 @@ export default async function TeamReportsPage({
 
           {/* Not submitted sidebar */}
           <div>
-            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 sticky top-20">
-              <h3 className="font-display font-semibold text-sm mb-3 text-white/60">
+            <div className="card p-4 lg:sticky lg:top-6">
+              <h3 className="font-display font-semibold text-sm mb-3"
+                style={{ color: "var(--text-2)" }}>
                 Not Submitted ({notSubmitted.length})
               </h3>
               {notSubmitted.length === 0 ? (
-                <div className="flex items-center gap-2 text-xs text-green-400">
-                  <CheckCircle size={13} /> सबने रिपोर्ट भेजी! 🎉
+                <div className="flex items-center gap-2 text-xs" style={{ color: "#4ade80" }}>
+                  <CheckCircle size={13} />
+                  सबने रिपोर्ट भेजी! 🎉
                 </div>
               ) : (
                 <div className="space-y-2">
                   {notSubmitted.map((m) => (
-                    <div key={m.id} className="flex items-center gap-2 py-1.5">
-                      <div className="w-6 h-6 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xs text-red-400/60 flex-shrink-0">
+                    <div key={m.id} className="flex items-center gap-2.5 py-1.5">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+                        style={{ background: "var(--danger-dim)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
                         {m.full_name?.[0]?.toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-medium truncate">{m.full_name}</div>
-                        <div className="text-xs text-white/25 font-mono">{m.awpl_id}</div>
+                        <div className="text-xs font-medium truncate" style={{ color: "var(--text-1)" }}>
+                          {m.full_name}
+                        </div>
+                        <div className="text-xs font-mono" style={{ color: "var(--text-3)" }}>
+                          {m.awpl_id}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -246,7 +287,7 @@ export default async function TeamReportsPage({
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
