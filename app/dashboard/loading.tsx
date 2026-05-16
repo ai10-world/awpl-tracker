@@ -1,51 +1,59 @@
 // app/dashboard/loading.tsx
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen bg-[#080808] text-white animate-pulse">
-      {/* Nav */}
-      <nav className="border-b border-white/5 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="h-7 w-28 bg-white/8 rounded-lg" />
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-20 bg-white/5 rounded-full" />
-            <div className="h-6 w-16 bg-white/5 rounded-full" />
+    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+      {/* Mobile top bar skeleton */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 z-40"
+        style={{ background: "var(--surface-1)", borderBottom: "1px solid var(--border-1)" }} />
+
+      {/* Sidebar skeleton - desktop only */}
+      <div className="hidden lg:block fixed top-0 left-0 h-full w-60"
+        style={{ background: "var(--surface-1)", borderRight: "1px solid var(--border-1)" }}>
+        <div className="p-4 border-b" style={{ borderColor: "var(--border-1)" }}>
+          <div className="h-7 w-28 shimmer rounded-lg" />
+        </div>
+        <div className="p-3 space-y-1">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-10 shimmer rounded-xl" style={{ animationDelay: `${i * 50}ms` }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="lg:ml-60 pt-14 lg:pt-0 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="h-4 w-40 shimmer rounded mb-2" />
+            <div className="h-9 w-72 shimmer rounded-xl mb-3" />
+            <div className="h-5 w-24 shimmer rounded-full" />
+          </div>
+
+          {/* Banner */}
+          <div className="h-16 shimmer rounded-2xl mb-6" />
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 shimmer rounded-2xl" style={{ animationDelay: `${i * 75}ms` }} />
+            ))}
+          </div>
+
+          {/* Two column */}
+          <div className="grid lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2 space-y-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-14 shimmer rounded-2xl" style={{ animationDelay: `${i * 50}ms` }} />
+              ))}
+            </div>
+            <div className="lg:col-span-3 grid sm:grid-cols-2 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-28 shimmer rounded-2xl" style={{ animationDelay: `${i * 75}ms` }} />
+              ))}
+            </div>
           </div>
         </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Welcome */}
-        <div className="mb-8">
-          <div className="h-8 w-56 bg-white/8 rounded-xl mb-2" />
-          <div className="h-4 w-36 bg-white/5 rounded-lg" />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="p-4 rounded-xl bg-white/3 border border-white/5">
-              <div className="w-8 h-8 rounded-lg bg-white/8 mb-3" />
-              <div className="h-7 w-10 bg-white/8 rounded mb-1" />
-              <div className="h-3 w-20 bg-white/5 rounded" />
-            </div>
-          ))}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-4 rounded-xl bg-white/3 border border-white/5 h-16" />
-          ))}
-        </div>
-
-        {/* Teams */}
-        <div className="h-5 w-24 bg-white/8 rounded mb-4" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-white/3 border border-white/5 h-28" />
-          ))}
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -3,10 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { SignOutButton } from "@/components/ui/signout-button";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Users, TrendingUp, ClipboardList, Star,
-  Shield, Plus, ChevronRight, ExternalLink, Calculator, ArrowRight,
+  Shield, Plus, ChevronRight, ArrowRight,
+  CheckCircle, AlertCircle, Calculator,
 } from "lucide-react";
 
 function getAdminClient() {
@@ -32,8 +33,7 @@ export default async function DashboardPage() {
     .select(`role, rank, team:teams(id, name, description, admin_id)`)
     .eq("profile_id", user.id);
 
-  let allTeamsCount = 0;
-  let allUsersCount = 0;
+  let allTeamsCount = 0, allUsersCount = 0;
   if (profile.role === "platform_admin") {
     const { count: tc } = await adminSupabase.from("teams").select("*", { count: "exact", head: true });
     const { count: uc } = await adminSupabase.from("profiles").select("*", { count: "exact", head: true });
@@ -51,243 +51,262 @@ export default async function DashboardPage() {
     }
   }
 
-  const roleColors: Record<string, string> = {
-    platform_admin: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-    team_admin: "text-brand-400 bg-brand-500/10 border-brand-500/20",
-    team_leader: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
-    member: "text-white/50 bg-white/5 border-white/10",
-  };
-  const roleLabels: Record<string, string> = {
-    platform_admin: "Platform Admin",
-    team_admin: "Team Admin",
-    team_leader: "Team Leader",
-    member: "Member",
-  };
+  // Today's report status
+  const today = new Date().toISOString().split("T")[0];
+  const firstTeamId = myTeams?.[0]?.team?.id;
+  let todayReport = null;
+  if (firstTeamId) {
+    const { data } = await adminSupabase
+      .from("reports").select("id, sp, mood").eq("profile_id", user.id)
+      .eq("report_date", today).single();
+    todayReport = data;
+  }
+
   const firstName = profile.full_name?.split(" ")[0] || "there";
 
+  const roleColors: Record<string, string> = {
+    platform_admin: "badge-blue",
+    team_admin: "badge-brand",
+    team_leader: "badge-yellow",
+    member: "badge-gray",
+  };
+
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
-      {/* Nav */}
-      <nav className="border-b border-white/5 px-4 sm:px-6 py-3 sticky top-0 bg-[#080808]/90 backdrop-blur-md z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard">
-            <img src="/logo.png" alt="Asclepius" className="h-8 w-auto rounded-lg" />
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className={`text-xs px-2 py-0.5 rounded-full border hidden sm:inline-flex ${roleColors[profile.role]}`}>
-              {roleLabels[profile.role]}
-            </span>
-            <span className="text-xs text-white/40 hidden md:block">{profile.full_name}</span>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
+    <DashboardLayout profile={profile}>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto animate-fade-in">
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-
-        {/* Welcome + role badge on mobile */}
-        <div className="flex items-start justify-between mb-5">
-          <div>
-            <h1 className="font-display font-bold text-2xl sm:text-3xl">
-              Hi, {firstName}!
-            </h1>
-            <p className="text-white/35 text-xs mt-0.5 font-mono">{profile.awpl_id}</p>
-          </div>
-          <span className={`text-xs px-2 py-1 rounded-full border sm:hidden mt-1 ${roleColors[profile.role]}`}>
-            {roleLabels[profile.role]}
-          </span>
-        </div>
-
-        {/* ── TWO COLUMN LAYOUT on lg+ ── */}
-        <div className="flex flex-col lg:flex-row gap-6">
-
-          {/* LEFT — Main content */}
-          <div className="flex-1 min-w-0">
-
-            {/* Stat Cards — smaller, compact */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5">
-              {profile.role === "platform_admin" && <>
-                <MiniStat icon={Users} label="Teams" value={allTeamsCount} color="blue" />
-                <MiniStat icon={Shield} label="Users" value={allUsersCount} color="brand" />
-              </>}
-              {profile.role !== "platform_admin" && (
-                <MiniStat icon={Users} label="Members" value={myMemberCount} color="brand" />
-              )}
-              <MiniStat icon={Star} label="My Teams" value={myTeams?.length || 0} color="yellow" />
-              <MiniStat icon={ClipboardList} label="Reports" value={0} color="green" soon />
-              <MiniStat icon={TrendingUp} label="Tasks" value={0} color="purple" soon />
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mb-5">
-              <p className="text-xs text-white/30 mb-2 font-medium uppercase tracking-wider">Quick Access</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <QuickLink href="/team" icon={Users} label="Team Management" desc="Manage members & roles" hoverColor="brand" />
-                {profile.role === "platform_admin" && (
-                  <QuickLink href="/admin" icon={Shield} label="Admin Panel" desc="All users & teams" hoverColor="blue" />
-                )}
-                <a
-                  href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/8 hover:border-brand-500/30 hover:bg-brand-500/5 transition-all group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center flex-shrink-0">
-                      <Calculator size={13} className="text-brand-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-medium">Price Calculator</div>
-                      <div className="text-xs text-white/25 hidden sm:block">AWPL product pricing</div>
-                    </div>
-                  </div>
-                  <ExternalLink size={12} className="text-white/20 group-hover:text-brand-400 transition-colors flex-shrink-0" />
-                </a>
-
-                <QuickLink href="/reports" icon={ClipboardList} label="Reports" desc="View and manage reports" hoverColor="brand" />
-
-                {/* Coming soon */}
-                {[
-                  { label: "Daily Reports", desc: "Phase 3" },
-                  { label: "Sales Tracker", desc: "Phase 3" },
-                ].map((item) => (
-                  <div key={item.label}
-                    className="flex items-center justify-between p-3 rounded-xl bg-white/2 border border-white/5 opacity-40 cursor-not-allowed">
-                    <div className="text-xs font-medium text-white/50">{item.label}</div>
-                    <span className="text-xs text-white/20 border border-white/8 px-1.5 py-0.5 rounded-full">{item.desc}</span>
-                  </div>
-                ))}
+        {/* Welcome header */}
+        <div className="mb-8">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm mb-1" style={{ color: "var(--text-3)" }}>
+                {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+              </p>
+              <h1 className="font-display font-bold text-3xl sm:text-4xl mb-2">
+                Welcome back, <span className="text-gradient">{firstName}</span>
+              </h1>
+              <div className="flex items-center gap-2">
+                <span className={`badge ${roleColors[profile.role]}`}>{profile.role.replace("_", " ")}</span>
+                <span className="font-mono text-xs" style={{ color: "var(--text-3)" }}>{profile.awpl_id}</span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT — My Teams slide panel */}
-          <div className="lg:w-72 xl:w-80 flex-shrink-0">
-            <div className="lg:sticky lg:top-20">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-white/30 font-medium uppercase tracking-wider">My Teams</p>
-                <Link href="/team/create"
-                  className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 border border-brand-500/25 px-2 py-1 rounded-full transition-colors">
-                  <Plus size={10} /> New
+        {/* Today's report banner */}
+        {firstTeamId && (
+          <div className="mb-6 animate-fade-up">
+            {!todayReport ? (
+              <div className="flex items-center justify-between p-4 rounded-2xl"
+                style={{ background: "rgba(255,115,10,0.08)", border: "1px solid rgba(255,115,10,0.2)" }}>
+                <div className="flex items-center gap-3">
+                  <AlertCircle size={18} style={{ color: "var(--brand-400)" }} />
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: "var(--brand-300)" }}>
+                      आज की रिपोर्ट अभी बाकी है
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-3)" }}>Submit your daily report</p>
+                  </div>
+                </div>
+                <Link href="/reports/submit"
+                  className="btn btn-primary text-xs px-4 py-2">
+                  Submit Now
                 </Link>
               </div>
-
-              {/* Horizontal scroll on mobile, vertical on desktop */}
-              {!myTeams || myTeams.length === 0 ? (
-                <div className="text-center py-8 border border-white/5 rounded-2xl">
-                  <Users size={24} className="text-white/10 mx-auto mb-2" />
-                  <p className="text-white/25 text-xs mb-3">No teams yet</p>
-                  <Link href="/team/create"
-                    className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-400 text-white text-xs px-4 py-2 rounded-full transition-colors">
-                    <Plus size={11} /> Create Team
-                  </Link>
+            ) : (
+              <div className="flex items-center justify-between p-4 rounded-2xl"
+                style={{ background: "var(--success-dim)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                <div className="flex items-center gap-3">
+                  <CheckCircle size={18} style={{ color: "var(--success)" }} />
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: "#4ade80" }}>
+                      आज की रिपोर्ट सबमिट हो गई ✓
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-3)" }}>
+                      SP: {todayReport.sp} · {todayReport.mood}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <>
-                  {/* Mobile: horizontal scroll */}
-                  <div className="flex gap-2 overflow-x-auto pb-2 lg:hidden scrollbar-none"
-                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-                    {myTeams.map((membership: any) => (
-                      <TeamCard key={membership.team?.id} membership={membership} roleColors={roleColors} roleLabels={roleLabels} compact />
-                    ))}
-                  </div>
+                <Link href="/reports/submit"
+                  className="btn btn-ghost text-xs px-3 py-1.5 border"
+                  style={{ borderColor: "var(--border-2)" }}>
+                  Edit
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
-                  {/* Desktop: vertical list */}
-                  <div className="hidden lg:flex flex-col gap-2">
-                    {myTeams.map((membership: any) => (
-                      <TeamCard key={membership.team?.id} membership={membership} roleColors={roleColors} roleLabels={roleLabels} />
-                    ))}
-                    <Link href="/team"
-                      className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-white/8 hover:border-brand-500/25 text-white/30 hover:text-brand-400 text-xs transition-all">
-                      View all teams <ArrowRight size={11} />
-                    </Link>
-                  </div>
-                </>
-              )}
-            </div>
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+          {profile.role === "platform_admin" && <>
+            <StatCard icon={Shield} label="Total Teams" value={allTeamsCount} color="blue" delay={0} />
+            <StatCard icon={Users} label="Total Users" value={allUsersCount} color="brand" delay={75} />
+          </>}
+          {profile.role !== "platform_admin" && (
+            <StatCard icon={Users} label="Team Members" value={myMemberCount} color="brand" delay={0} />
+          )}
+          <StatCard icon={Star} label="My Teams" value={myTeams?.length || 0} color="yellow" delay={150} />
+          <StatCard icon={ClipboardList} label="Reports" value={0} color="green" delay={225} soon />
+          <StatCard icon={TrendingUp} label="Tasks" value={0} color="purple" delay={300} soon />
+        </div>
+
+        {/* Two column layout */}
+        <div className="grid lg:grid-cols-5 gap-6">
+
+          {/* Quick Actions — left */}
+          <div className="lg:col-span-2 space-y-2">
+            <p className="text-xs font-medium uppercase tracking-widest mb-3" style={{ color: "var(--text-3)" }}>
+              Quick Access
+            </p>
+            <ActionCard href="/reports/submit" icon={ClipboardList} label="Submit Report" desc="डियर फाइटर - Daily report" color="brand" />
+            <ActionCard href="/team" icon={Users} label="My Teams" desc="Manage members & roles" color="brand" />
+            {profile.role === "platform_admin" && (
+              <ActionCard href="/admin" icon={Shield} label="Admin Panel" desc="All users & teams" color="blue" />
+            )}
+            {["platform_admin", "team_admin", "team_leader"].includes(profile.role) && (
+              <ActionCard href="/reports/team" icon={TrendingUp} label="Team Reports" desc="See team submissions" color="green" />
+            )}
+            <a href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
+              target="_blank" rel="noopener noreferrer"
+              className="card card-interactive flex items-center justify-between p-3.5 group transition-all"
+              style={{ textDecoration: "none" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ background: "rgba(255,115,10,0.1)", border: "1px solid rgba(255,115,10,0.2)" }}>
+                  <Calculator size={15} style={{ color: "var(--brand-400)" }} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: "var(--text-1)" }}>Price Calculator</p>
+                  <p className="text-xs" style={{ color: "var(--text-3)" }}>AWPL product pricing</p>
+                </div>
+              </div>
+              <ArrowRight size={14} style={{ color: "var(--text-4)" }} />
+            </a>
           </div>
 
+          {/* My Teams — right */}
+          <div className="lg:col-span-3">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--text-3)" }}>
+                My Teams
+              </p>
+              <Link href="/team/create"
+                className="flex items-center gap-1.5 text-xs transition-colors hover:opacity-100 opacity-70"
+                style={{ color: "var(--brand-400)" }}>
+                <Plus size={12} /> New Team
+              </Link>
+            </div>
+
+            {!myTeams || myTeams.length === 0 ? (
+              <EmptyTeams />
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {myTeams.map((m: any, i: number) => (
+                  <Link key={m.team?.id} href={`/team/${m.team?.id}`}
+                    className="card card-interactive p-4 group transition-all animate-fade-up"
+                    style={{ animationDelay: `${i * 75}ms`, textDecoration: "none" }}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold text-sm"
+                        style={{ background: "rgba(255,115,10,0.12)", color: "var(--brand-400)", border: "1px solid rgba(255,115,10,0.2)" }}>
+                        {m.team?.name?.[0]?.toUpperCase()}
+                      </div>
+                      <ChevronRight size={14} className="transition-transform group-hover:translate-x-0.5"
+                        style={{ color: "var(--text-4)" }} />
+                    </div>
+                    <p className="font-display font-semibold text-sm mb-1 truncate" style={{ color: "var(--text-1)" }}>
+                      {m.team?.name}
+                    </p>
+                    {m.team?.description && (
+                      <p className="text-xs line-clamp-1 mb-2" style={{ color: "var(--text-3)" }}>
+                        {m.team.description}
+                      </p>
+                    )}
+                    <span className={`badge ${
+                      m.role === "team_admin" ? "badge-brand" :
+                      m.role === "team_leader" ? "badge-yellow" : "badge-gray"
+                    }`}>
+                      {m.role.replace("_", " ")}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
 
-// ── Mini Stat Card ─────────────────────────────────────────────
-function MiniStat({ icon: Icon, label, value, color, soon }: {
-  icon: any; label: string; value: number; color: string; soon?: boolean;
-}) {
-  const colors: Record<string, string> = {
-    blue: "text-blue-400 bg-blue-500/10 border-blue-500/15",
-    brand: "text-brand-400 bg-brand-500/10 border-brand-500/15",
-    yellow: "text-yellow-400 bg-yellow-500/10 border-yellow-500/15",
-    green: "text-green-400 bg-green-500/10 border-green-500/15",
-    purple: "text-purple-400 bg-purple-500/10 border-purple-500/15",
+function StatCard({ icon: Icon, label, value, color, delay, soon }: any) {
+  const colorMap: Record<string, { bg: string; text: string; border: string }> = {
+    blue:   { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)" },
+    brand:  { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)" },
+    yellow: { bg: "var(--warning-dim)", text: "#fbbf24", border: "rgba(245,158,11,0.2)" },
+    green:  { bg: "var(--success-dim)", text: "#4ade80", border: "rgba(34,197,94,0.2)" },
+    purple: { bg: "rgba(168,85,247,0.1)", text: "#c084fc", border: "rgba(168,85,247,0.2)" },
   };
+  const c = colorMap[color];
   return (
-    <div className="p-3 rounded-xl bg-white/3 border border-white/8 flex items-center gap-2.5">
-      <div className={`w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 ${colors[color]}`}>
-        <Icon size={13} />
-      </div>
-      <div className="min-w-0">
-        <div className="font-display font-bold text-lg leading-none">
-          {soon ? "—" : value}
+    <div className="card p-4 animate-fade-up" style={{ animationDelay: `${delay}ms` }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+          <Icon size={15} style={{ color: c.text }} />
         </div>
-        <div className="text-xs text-white/30 truncate">{label}</div>
+        {soon && <span className="badge badge-gray">Soon</span>}
       </div>
+      <div className="font-display font-bold text-2xl mb-0.5" style={{ color: "var(--text-1)" }}>
+        {soon ? "—" : value}
+      </div>
+      <div className="text-xs" style={{ color: "var(--text-3)" }}>{label}</div>
     </div>
   );
 }
 
-// ── Quick Link ─────────────────────────────────────────────────
-function QuickLink({ href, icon: Icon, label, desc, hoverColor }: {
-  href: string; icon: any; label: string; desc: string; hoverColor: string;
-}) {
-  const hover = hoverColor === "blue"
-    ? "hover:border-blue-500/30 hover:bg-blue-500/5"
-    : "hover:border-brand-500/30 hover:bg-brand-500/5";
-  const iconStyle = hoverColor === "blue"
-    ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-    : "bg-brand-500/10 border-brand-500/20 text-brand-400";
-  const chevronHover = hoverColor === "blue" ? "group-hover:text-blue-400" : "group-hover:text-brand-400";
-
+function ActionCard({ href, icon: Icon, label, desc, color }: any) {
+  const colorMap: Record<string, { bg: string; text: string; border: string; hover: string }> = {
+    brand:  { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)", hover: "rgba(255,115,10,0.05)" },
+    blue:   { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)", hover: "rgba(59,130,246,0.03)" },
+    green:  { bg: "var(--success-dim)", text: "#4ade80", border: "rgba(34,197,94,0.2)", hover: "rgba(34,197,94,0.03)" },
+  };
+  const c = colorMap[color] || colorMap.brand;
   return (
-    <Link href={href}
-      className={`flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/8 ${hover} transition-all group`}>
-      <div className="flex items-center gap-2.5">
-        <div className={`w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 ${iconStyle}`}>
-          <Icon size={13} />
+    <Link href={href} className="card flex items-center justify-between p-3.5 group transition-all"
+      style={{ textDecoration: "none" }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = c.border; (e.currentTarget as HTMLElement).style.background = `var(--surface-2) ${c.hover}`; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ""; (e.currentTarget as HTMLElement).style.background = ""; }}>
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+          <Icon size={15} style={{ color: c.text }} />
         </div>
         <div>
-          <div className="text-xs font-medium">{label}</div>
-          <div className="text-xs text-white/25 hidden sm:block">{desc}</div>
+          <p className="text-sm font-medium" style={{ color: "var(--text-1)" }}>{label}</p>
+          <p className="text-xs" style={{ color: "var(--text-3)" }}>{desc}</p>
         </div>
       </div>
-      <ChevronRight size={13} className={`text-white/15 ${chevronHover} transition-colors flex-shrink-0`} />
+      <ChevronRight size={14} className="transition-transform group-hover:translate-x-0.5"
+        style={{ color: "var(--text-4)" }} />
     </Link>
   );
 }
 
-// ── Team Card ──────────────────────────────────────────────────
-function TeamCard({ membership, roleColors, roleLabels, compact }: {
-  membership: any; roleColors: Record<string, string>; roleLabels: Record<string, string>; compact?: boolean;
-}) {
+function EmptyTeams() {
   return (
-    <Link href={`/team/${membership.team?.id}`}
-      className={`flex-shrink-0 block p-3 rounded-xl bg-white/3 border border-white/8 hover:border-brand-500/30 hover:bg-brand-500/5 transition-all group ${
-        compact ? "w-44" : "w-full"
-      }`}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center font-display font-bold text-brand-400 text-xs flex-shrink-0">
-          {membership.team?.name?.[0]?.toUpperCase()}
-        </div>
-        <span className={`text-xs px-1.5 py-0.5 rounded-full border truncate ${roleColors[membership.role]}`}>
-          {roleLabels[membership.role]}
-        </span>
+    <div className="card p-8 text-center animate-fade-up">
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+        style={{ background: "var(--surface-3)" }}>
+        <Users size={24} style={{ color: "var(--text-4)" }} />
       </div>
-      <div className="font-medium text-xs truncate">{membership.team?.name}</div>
-      {membership.team?.description && !compact && (
-        <div className="text-xs text-white/25 mt-0.5 truncate">{membership.team.description}</div>
-      )}
-    </Link>
+      <h3 className="font-display font-semibold mb-1" style={{ color: "var(--text-1)" }}>No teams yet</h3>
+      <p className="text-sm mb-4" style={{ color: "var(--text-3)" }}>
+        Create your first team and start adding members.
+      </p>
+      <Link href="/team/create" className="btn btn-primary text-sm">
+        <Plus size={14} /> Create Team
+      </Link>
+    </div>
   );
 }
