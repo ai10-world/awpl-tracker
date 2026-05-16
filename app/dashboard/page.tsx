@@ -9,6 +9,13 @@ import {
   Shield, Plus, ChevronRight, ArrowRight,
   CheckCircle, AlertCircle, Calculator,
 } from "lucide-react";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 function getAdminClient() {
   return createAdminClient(
@@ -266,21 +273,21 @@ function StatCard({ icon: Icon, label, value, color, delay, soon }: any) {
 }
 
 function ActionCard({ href, icon: Icon, label, desc, color }: any) {
-  const colorMap: Record<string, { bg: string; text: string; border: string; hover: string }> = {
-    brand:  { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)", hover: "rgba(255,115,10,0.05)" },
-    blue:   { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)", hover: "rgba(59,130,246,0.03)" },
-    green:  { bg: "var(--success-dim)", text: "#4ade80", border: "rgba(34,197,94,0.2)", hover: "rgba(34,197,94,0.03)" },
+  const styles: Record<string, { iconBg: string; iconText: string; iconBorder: string }> = {
+    brand: { iconBg: "rgba(255,115,10,0.1)", iconText: "var(--brand-400)", iconBorder: "rgba(255,115,10,0.2)" },
+    blue:  { iconBg: "var(--info-dim)", iconText: "#60a5fa", iconBorder: "rgba(59,130,246,0.2)" },
+    green: { iconBg: "var(--success-dim)", iconText: "#4ade80", iconBorder: "rgba(34,197,94,0.2)" },
   };
-  const c = colorMap[color] || colorMap.brand;
+  const s = styles[color] || styles.brand;
+
   return (
-    <Link href={href} className="card flex items-center justify-between p-3.5 group transition-all"
-      style={{ textDecoration: "none" }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = c.border; (e.currentTarget as HTMLElement).style.background = `var(--surface-2) ${c.hover}`; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ""; (e.currentTarget as HTMLElement).style.background = ""; }}>
+    <Link href={href}
+      className="card card-interactive flex items-center justify-between p-3.5 group transition-all"
+      style={{ textDecoration: "none" }}>
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-          style={{ background: c.bg, border: `1px solid ${c.border}` }}>
-          <Icon size={15} style={{ color: c.text }} />
+          style={{ background: s.iconBg, border: `1px solid ${s.iconBorder}` }}>
+          <Icon size={15} style={{ color: s.iconText }} />
         </div>
         <div>
           <p className="text-sm font-medium" style={{ color: "var(--text-1)" }}>{label}</p>
