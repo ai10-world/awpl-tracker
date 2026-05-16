@@ -86,6 +86,16 @@ input:-webkit-autofill:focus {
   .opacity-0-init { opacity: 0; }
 }
 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --primary: 24 95% 53%;     /* your brand orange */
+    --primary-foreground: 0 0% 100%;
+  }
+}
+
 /* Better base typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Outfit", sans-serif;
