@@ -53,7 +53,7 @@ export default async function DashboardPage() {
 
   // Today's report status
   const today = new Date().toISOString().split("T")[0];
-  const firstTeamId = myTeams?.[0]?.team?.id;
+  const firstTeamId = (myTeams?.[0]?.team as any)?.id;
   let todayReport = null;
   if (firstTeamId) {
     const { data } = await adminSupabase
