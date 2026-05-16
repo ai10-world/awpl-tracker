@@ -17,12 +17,14 @@ interface NavItem {
   label: string;
   badge?: string;
   roles?: string[];
+  excludeRoles?: string[];
   soon?: boolean;
 }
 
 const navItems: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/reports", icon: ClipboardList, label: "Reports" },
+  { href: "/reports/team", icon: ClipboardList, label: "Reports", roles: ["platform_admin"] },
+  { href: "/reports", icon: ClipboardList, label: "My Reports", excludeRoles: ["platform_admin"] },
   { href: "/reports/team", icon: TrendingUp, label: "Team Reports", roles: ["platform_admin", "team_admin", "team_leader"] },
   { href: "/team", icon: Users, label: "Teams" },
   { href: "/admin", icon: Shield, label: "Admin Panel", roles: ["platform_admin"] },
@@ -39,8 +41,9 @@ export function Sidebar({ profile }: { profile: any }) {
   const pathname = usePathname();
 
   const filteredNav = navItems.filter((item) => {
-    if (!item.roles) return true;
-    return item.roles.includes(profile?.role);
+  if (item.excludeRoles?.includes(profile?.role)) return false;
+  if (!item.roles) return true;
+  return item.roles.includes(profile?.role);
   });
 
   const roleColors: Record<string, string> = {

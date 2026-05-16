@@ -58,16 +58,17 @@ export default async function DashboardPage() {
     }
   }
 
-  // Today's report status
-  const today = new Date().toISOString().split("T")[0];
-  const firstTeamId = (myTeams?.[0]?.team as any)?.id;
-  let todayReport = null;
-  if (firstTeamId) {
-    const { data } = await adminSupabase
-      .from("reports").select("id, sp, mood").eq("profile_id", user.id)
-      .eq("report_date", today).single();
-    todayReport = data;
-  }
+  // Today's report status — only for non-admin roles
+const today = new Date().toISOString().split("T")[0];
+const firstTeamId = (myTeams?.[0]?.team as any)?.id;
+let todayReport = null;
+const shouldShowReport = profile.role !== "platform_admin";
+if (firstTeamId && shouldShowReport) {
+  const { data } = await adminSupabase
+    .from("reports").select("id, sp, mood").eq("profile_id", user.id)
+    .eq("report_date", today).single();
+  todayReport = data;
+}
 
   const firstName = profile.full_name?.split(" ")[0] || "there";
 
@@ -100,8 +101,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Today's report banner */}
-        {firstTeamId && (
+        {/* Today's report banner — hidden for platform admin */}
+        {firstTeamId && shouldShowReport && (
           <div className="mb-6 animate-fade-up">
             {!todayReport ? (
               <div className="flex items-center justify-between p-4 rounded-2xl"
