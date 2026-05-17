@@ -1,14 +1,12 @@
 {
   "name": "AWPL Team Tracker",
   "short_name": "AWPL Tracker",
-  "description": "Track AWPL team performance, reports, attendance, tasks, and growth.",
+  "description": "Track your AWPL team performance, daily reports and targets.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0a0a0b",
   "theme_color": "#ff730a",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "en",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -38,7 +36,8 @@
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-384x384.png",
@@ -48,7 +47,8 @@
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
