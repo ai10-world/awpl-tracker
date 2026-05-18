@@ -13,9 +13,7 @@ import {
   ActivitySection,
   CalculatorLink,
 } from "@/components/dashboard/dashboard-client";
-import {
-  Users, TrendingUp, ClipboardList, Star, Shield, Plus, CheckCircle, AlertCircle,
-} from "lucide-react";
+import { CheckCircle, AlertCircle } from "lucide-react";
 
 function getAdminClient() {
   return createAdminClient(
@@ -184,16 +182,16 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
           {profile.role === "platform_admin" && (
             <>
-              <StatCard icon={Shield} label="Total Teams" value={allTeamsCount} color="blue" delay={0} />
-              <StatCard icon={Users} label="Total Users" value={allUsersCount} color="brand" delay={75} />
+              <StatCard icon="shield" label="Total Teams" value={allTeamsCount} color="blue" delay={0} />
+              <StatCard icon="users" label="Total Users" value={allUsersCount} color="brand" delay={75} />
             </>
           )}
           {profile.role !== "platform_admin" && (
-            <StatCard icon={Users} label="Members" value={myMemberCount} color="brand" delay={0} />
+            <StatCard icon="users" label="Members" value={myMemberCount} color="brand" delay={0} />
           )}
-          <StatCard icon={Star} label="My Teams" value={myTeams?.length || 0} color="yellow" delay={75} />
-          <StatCard icon={ClipboardList} label="Reports" value={0} color="green" delay={150} soon />
-          <StatCard icon={TrendingUp} label="Tasks" value={0} color="purple" delay={225} soon />
+          <StatCard icon="star" label="My Teams" value={myTeams?.length || 0} color="yellow" delay={75} />
+          <StatCard icon="clipboardList" label="Reports" value={0} color="green" delay={150} soon />
+          <StatCard icon="trendingUp" label="Tasks" value={0} color="purple" delay={225} soon />
         </div>
 
         {/* ── Main 3-column grid ───────────────────── */}
@@ -210,18 +208,18 @@ export default async function DashboardPage() {
                 {shouldShowReport && (
                   <ActionCard
                     href="/reports/submit"
-                    icon={ClipboardList}
+                    icon="clipboardList"
                     label="Submit Report"
                     desc="डियर फाइटर daily report"
                     color="brand"
                   />
                 )}
-                <ActionCard href="/team" icon={Users} label="My Teams" desc="Manage members & roles" color="brand" />
+                <ActionCard href="/team" icon="users" label="My Teams" desc="Manage members & roles" color="brand" />
                 {profile.role === "platform_admin" && (
-                  <ActionCard href="/admin" icon={Shield} label="Admin Panel" desc="All users & teams" color="blue" />
+                  <ActionCard href="/admin" icon="shield" label="Admin Panel" desc="All users & teams" color="blue" />
                 )}
                 {["platform_admin", "team_admin", "team_leader"].includes(profile.role) && (
-                  <ActionCard href="/reports/team" icon={TrendingUp} label="Team Reports" desc="See submissions" color="green" />
+                  <ActionCard href="/reports/team" icon="trendingUp" label="Team Reports" desc="See submissions" color="green" />
                 )}
                 <CalculatorLink />
               </div>
@@ -291,3 +289,4 @@ export default async function DashboardPage() {
     </DashboardLayout>
   );
 }
+

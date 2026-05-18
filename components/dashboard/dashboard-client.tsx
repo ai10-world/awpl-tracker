@@ -2,14 +2,25 @@
 "use client";
 
 import Link from "next/link";
-import { Users, ClipboardList, TrendingUp, Shield, Calculator, ChevronRight, ArrowRight, Plus, Zap } from "lucide-react";
+import { Users, ClipboardList, TrendingUp, Star, Shield, Calculator, ChevronRight, ArrowRight, Plus, Zap } from "lucide-react";
 import { ActivityFeed } from "@/components/feed/activity-feed";
 import { StreakCard } from "@/components/streaks/streak-card";
 
+type IconKey = "users" | "clipboardList" | "trendingUp" | "star" | "shield";
+
+const ICON_MAP: Record<IconKey, any> = {
+  users: Users,
+  clipboardList: ClipboardList,
+  trendingUp: TrendingUp,
+  star: Star,
+  shield: Shield,
+};
+
 // ── Stat Card ──────────────────────────────────────────────────
-export function StatCard({ icon: Icon, label, value, color, delay, soon }: {
-  icon: any; label: string; value: number; color: string; delay: number; soon?: boolean;
+export function StatCard({ icon, label, value, color, delay, soon }: {
+  icon: IconKey; label: string; value: number; color: string; delay: number; soon?: boolean;
 }) {
+  const Icon = ICON_MAP[icon];
   const colorMap: Record<string, any> = {
     blue:   { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)" },
     brand:  { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)" },
@@ -36,9 +47,10 @@ export function StatCard({ icon: Icon, label, value, color, delay, soon }: {
 }
 
 // ── Action Card ────────────────────────────────────────────────
-export function ActionCard({ href, icon: Icon, label, desc, color }: {
-  href: string; icon: any; label: string; desc: string; color: string;
+export function ActionCard({ href, icon, label, desc, color }: {
+  href: string; icon: IconKey; label: string; desc: string; color: string;
 }) {
+  const Icon = ICON_MAP[icon];
   const styles: Record<string, any> = {
     brand: { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)" },
     blue:  { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)" },
