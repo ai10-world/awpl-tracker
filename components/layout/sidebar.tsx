@@ -8,7 +8,7 @@ import { logOut } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, ClipboardList,
   Shield, Calculator, LogOut, ChevronLeft,
-  ChevronRight, TrendingUp, Zap, Settings, Bell,
+  ChevronRight, TrendingUp, Zap, Settings, Bell, Lock,
 } from "lucide-react";
 
 interface NavItem {
@@ -26,6 +26,7 @@ const navItems: NavItem[] = [
   { href: "/reports/team", icon: TrendingUp, label: "Team Reports", roles: ["platform_admin", "team_admin", "team_leader"] },
   { href: "/reports", icon: ClipboardList, label: "My Reports", excludeRoles: ["platform_admin"] },
   { href: "/team", icon: Users, label: "Teams" },
+  { href: "/vault", icon: Lock, label: "Vault" },
   { href: "/admin", icon: Shield, label: "Admin", roles: ["platform_admin"] },
 ];
 

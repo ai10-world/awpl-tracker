@@ -218,6 +218,46 @@ input:-webkit-autofill:focus {
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
 
+/* Vault Theme (scoped) */
+.vault-theme {
+  --bg: #07080d;
+  --bg2: #0d0f18;
+  --bg3: #13151f;
+  --surface: #181a28;
+  --surface2: #1f2235;
+  --border: rgba(255, 255, 255, 0.07);
+  --border2: rgba(255, 255, 255, 0.13);
+  --text: #eeeef8;
+  --text2: #9494b4;
+  --text3: #55557a;
+  --accent: #6c5ce7;
+  --accent2: #a29bfe;
+  --accent-bg: rgba(108, 92, 231, 0.13);
+  --gold: #ffd700;
+  --gold2: #ffb347;
+  --green: #00cec9;
+  --red: #ff6b6b;
+}
+.vault-theme .text-gold-gradient {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.vault-theme .id-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.vault-theme .id-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(108, 92, 231, 0.18);
+}
+
 /* ── Component Overrides ──────────────────────────────────── */
 
 /* Input base */
