@@ -5,11 +5,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { StreakCard } from "@/components/streaks/streak-card";
-import { ActivityFeed } from "@/components/feed/activity-feed";
 import {
-  Users, TrendingUp, ClipboardList, Star,
-  Shield, Plus, ChevronRight, ArrowRight,
-  CheckCircle, AlertCircle, Calculator, Zap,
+  StatCard,
+  ActionCard,
+  TeamMiniCard,
+  EmptyTeams,
+  ActivitySection,
+  CalculatorLink,
+} from "@/components/dashboard/dashboard-client";
+import {
+  Users, TrendingUp, ClipboardList, Star, Shield, Plus, CheckCircle, AlertCircle,
 } from "lucide-react";
 
 function getAdminClient() {
@@ -71,7 +76,7 @@ export default async function DashboardPage() {
     streak = data;
   }
 
-  // Activity feed (last 8 events from user's teams)
+  // Activity feed
   let feedEvents: any[] = [];
   if (teamIds.length > 0) {
     const { data } = await adminSupabase
@@ -84,7 +89,6 @@ export default async function DashboardPage() {
   }
 
   const firstName = profile.full_name?.split(" ")[0] || "there";
-
   const roleColors: Record<string, string> = {
     platform_admin: "badge-blue",
     team_admin: "badge-brand",
@@ -96,13 +100,16 @@ export default async function DashboardPage() {
     <DashboardLayout profile={profile}>
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
 
-        {/* Welcome */}
+        {/* ── Welcome header ──────────────────────── */}
         <div className="mb-6 sm:mb-8">
           <p className="text-xs sm:text-sm mb-1" style={{ color: "var(--text-3)" }}>
-            {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+            {new Date().toLocaleDateString("en-IN", {
+              weekday: "long", day: "numeric", month: "long",
+            })}
           </p>
           <h1 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl mb-2">
-            Welcome back, <span className="text-gradient">{firstName}</span>
+            Welcome back,{" "}
+            <span className="text-gradient">{firstName}</span>
           </h1>
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`badge ${roleColors[profile.role]}`}>
@@ -114,12 +121,17 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Today's report banner */}
+        {/* ── Today's report banner ────────────────── */}
         {firstTeamId && shouldShowReport && (
           <div className="mb-5 animate-fade-up">
             {!todayReport ? (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl"
-                style={{ background: "rgba(255,115,10,0.08)", border: "1px solid rgba(255,115,10,0.2)" }}>
+              <div
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl"
+                style={{
+                  background: "rgba(255,115,10,0.08)",
+                  border: "1px solid rgba(255,115,10,0.2)",
+                }}
+              >
                 <div className="flex items-center gap-3">
                   <AlertCircle size={18} style={{ color: "var(--brand-400)" }} />
                   <div>
@@ -131,13 +143,21 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                 </div>
-                <Link href="/reports/submit" className="btn btn-primary text-xs px-4 py-2 self-start sm:self-auto">
+                <Link
+                  href="/reports/submit"
+                  className="btn btn-primary text-xs px-4 py-2 self-start sm:self-auto"
+                >
                   Submit Now
                 </Link>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl"
-                style={{ background: "var(--success-dim)", border: "1px solid rgba(34,197,94,0.2)" }}>
+              <div
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl"
+                style={{
+                  background: "var(--success-dim)",
+                  border: "1px solid rgba(34,197,94,0.2)",
+                }}
+              >
                 <div className="flex items-center gap-3">
                   <CheckCircle size={18} style={{ color: "var(--success)" }} />
                   <div>
@@ -149,7 +169,10 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                 </div>
-                <Link href="/reports/submit" className="btn btn-secondary text-xs px-4 py-2 self-start sm:self-auto">
+                <Link
+                  href="/reports/submit"
+                  className="btn btn-secondary text-xs px-4 py-2 self-start sm:self-auto"
+                >
                   Edit
                 </Link>
               </div>
@@ -157,12 +180,14 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Stats */}
+        {/* ── Stats ───────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
-          {profile.role === "platform_admin" && <>
-            <StatCard icon={Shield} label="Total Teams" value={allTeamsCount} color="blue" delay={0} />
-            <StatCard icon={Users} label="Total Users" value={allUsersCount} color="brand" delay={75} />
-          </>}
+          {profile.role === "platform_admin" && (
+            <>
+              <StatCard icon={Shield} label="Total Teams" value={allTeamsCount} color="blue" delay={0} />
+              <StatCard icon={Users} label="Total Users" value={allUsersCount} color="brand" delay={75} />
+            </>
+          )}
           {profile.role !== "platform_admin" && (
             <StatCard icon={Users} label="Members" value={myMemberCount} color="brand" delay={0} />
           )}
@@ -171,20 +196,25 @@ export default async function DashboardPage() {
           <StatCard icon={TrendingUp} label="Tasks" value={0} color="purple" delay={225} soon />
         </div>
 
-        {/* Main grid — 3 columns on large screens */}
+        {/* ── Main 3-column grid ───────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
 
-          {/* Left column — Quick actions + Teams */}
-          <div className="lg:col-span-1 space-y-4">
-
-            {/* Quick actions */}
+          {/* Left — Quick actions + Teams */}
+          <div className="space-y-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-widest mb-2"
-                style={{ color: "var(--text-3)" }}>Quick Access</p>
+                style={{ color: "var(--text-3)" }}>
+                Quick Access
+              </p>
               <div className="space-y-2">
                 {shouldShowReport && (
-                  <ActionCard href="/reports/submit" icon={ClipboardList}
-                    label="Submit Report" desc="डियर फाइटर daily report" color="brand" />
+                  <ActionCard
+                    href="/reports/submit"
+                    icon={ClipboardList}
+                    label="Submit Report"
+                    desc="डियर फाइटर daily report"
+                    color="brand"
+                  />
                 )}
                 <ActionCard href="/team" icon={Users} label="My Teams" desc="Manage members & roles" color="brand" />
                 {profile.role === "platform_admin" && (
@@ -193,29 +223,16 @@ export default async function DashboardPage() {
                 {["platform_admin", "team_admin", "team_leader"].includes(profile.role) && (
                   <ActionCard href="/reports/team" icon={TrendingUp} label="Team Reports" desc="See submissions" color="green" />
                 )}
-                <a href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
-                  target="_blank" rel="noopener noreferrer"
-                  className="card card-interactive flex items-center justify-between p-3 group"
-                  style={{ textDecoration: "none" }}>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: "rgba(255,115,10,0.1)", border: "1px solid rgba(255,115,10,0.2)" }}>
-                      <Calculator size={13} style={{ color: "var(--brand-400)" }} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium" style={{ color: "var(--text-1)" }}>Price Calculator</p>
-                    </div>
-                  </div>
-                  <ArrowRight size={13} style={{ color: "var(--text-4)" }} />
-                </a>
+                <CalculatorLink />
               </div>
             </div>
 
-            {/* My Teams compact */}
-            {myTeams && myTeams.length > 0 && (
+            {/* My Teams */}
+            {myTeams && myTeams.length > 0 ? (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--text-3)" }}>
+                  <p className="text-xs font-medium uppercase tracking-widest"
+                    style={{ color: "var(--text-3)" }}>
                     My Teams
                   </p>
                   <Link href="/team/create" className="text-xs" style={{ color: "var(--brand-400)" }}>
@@ -224,46 +241,27 @@ export default async function DashboardPage() {
                 </div>
                 <div className="space-y-2">
                   {myTeams.slice(0, 3).map((m: any) => (
-                    <Link key={m.team?.id} href={`/team/${m.team?.id}`}
-                      className="card card-interactive flex items-center justify-between p-3 group"
-                      style={{ textDecoration: "none" }}>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center font-display font-bold text-xs flex-shrink-0"
-                          style={{ background: "rgba(255,115,10,0.12)", color: "var(--brand-400)", border: "1px solid rgba(255,115,10,0.2)" }}>
-                          {m.team?.name?.[0]?.toUpperCase()}
-                        </div>
-                        <span className="text-xs font-medium truncate" style={{ color: "var(--text-1)" }}>
-                          {m.team?.name}
-                        </span>
-                      </div>
-                      <ChevronRight size={13} style={{ color: "var(--text-4)" }} />
-                    </Link>
+                    <TeamMiniCard key={m.team?.id} team={m} />
                   ))}
                   {myTeams.length > 3 && (
-                    <Link href="/team" className="text-xs text-center block py-2 transition-colors"
-                      style={{ color: "var(--text-3)" }}>
+                    <Link
+                      href="/team"
+                      className="text-xs text-center block py-2 transition-colors"
+                      style={{ color: "var(--text-3)" }}
+                    >
                       +{myTeams.length - 3} more teams →
                     </Link>
                   )}
                 </div>
               </div>
-            )}
-
-            {/* Empty teams state */}
-            {(!myTeams || myTeams.length === 0) && (
-              <div className="card p-6 text-center">
-                <Users size={24} className="mx-auto mb-2" style={{ color: "var(--text-4)" }} />
-                <p className="text-xs mb-3" style={{ color: "var(--text-3)" }}>No teams yet</p>
-                <Link href="/team/create" className="btn btn-primary text-xs px-4 py-2">
-                  <Plus size={13} /> Create Team
-                </Link>
-              </div>
+            ) : (
+              <EmptyTeams />
             )}
           </div>
 
-          {/* Middle column — Streak */}
+          {/* Middle — Streak */}
           {shouldShowReport && (
-            <div className="lg:col-span-1">
+            <div>
               <p className="text-xs font-medium uppercase tracking-widest mb-2"
                 style={{ color: "var(--text-3)" }}>
                 My Streak
@@ -272,84 +270,24 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          {/* Right column — Activity Feed */}
-          <div className={shouldShowReport ? "lg:col-span-1" : "lg:col-span-2"}>
+          {/* Right — Activity Feed */}
+          <div className={shouldShowReport ? "" : "lg:col-span-2"}>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "var(--text-3)" }}>
+              <p className="text-xs font-medium uppercase tracking-widest"
+                style={{ color: "var(--text-3)" }}>
                 Team Activity
               </p>
-              <Link href="/activity" className="text-xs transition-colors" style={{ color: "var(--brand-400)" }}>
+              <Link href="/activity" className="text-xs" style={{ color: "var(--brand-400)" }}>
                 View all →
               </Link>
             </div>
-            <div className="card overflow-hidden">
-              {feedEvents.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Zap size={24} className="mx-auto mb-2" style={{ color: "var(--text-4)" }} />
-                  <p className="text-xs" style={{ color: "var(--text-3)" }}>
-                    Activity will appear here as your team submits reports.
-                  </p>
-                </div>
-              ) : (
-                <ActivityFeed events={feedEvents} showTeamName={teamIds.length > 1} maxItems={8} />
-              )}
-            </div>
+            <ActivitySection
+              events={feedEvents}
+              showTeamName={teamIds.length > 1}
+            />
           </div>
         </div>
       </div>
     </DashboardLayout>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, color, delay, soon }: any) {
-  const colorMap: Record<string, any> = {
-    blue:   { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)" },
-    brand:  { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)" },
-    yellow: { bg: "var(--warning-dim)", text: "#fbbf24", border: "rgba(245,158,11,0.2)" },
-    green:  { bg: "var(--success-dim)", text: "#4ade80", border: "rgba(34,197,94,0.2)" },
-    purple: { bg: "rgba(168,85,247,0.1)", text: "#c084fc", border: "rgba(168,85,247,0.2)" },
-  };
-  const c = colorMap[color];
-  return (
-    <div className="card p-3 sm:p-4 animate-fade-up" style={{ animationDelay: `${delay}ms` }}>
-      <div className="flex items-center justify-between mb-2 sm:mb-3">
-        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center"
-          style={{ background: c.bg, border: `1px solid ${c.border}` }}>
-          <Icon size={13} style={{ color: c.text }} />
-        </div>
-        {soon && <span className="badge badge-gray text-xs">Soon</span>}
-      </div>
-      <div className="font-display font-bold text-xl sm:text-2xl mb-0.5" style={{ color: "var(--text-1)" }}>
-        {soon ? "—" : value}
-      </div>
-      <div className="text-xs" style={{ color: "var(--text-3)" }}>{label}</div>
-    </div>
-  );
-}
-
-function ActionCard({ href, icon: Icon, label, desc, color }: any) {
-  const styles: Record<string, any> = {
-    brand: { bg: "rgba(255,115,10,0.1)", text: "var(--brand-400)", border: "rgba(255,115,10,0.2)" },
-    blue:  { bg: "var(--info-dim)", text: "#60a5fa", border: "rgba(59,130,246,0.2)" },
-    green: { bg: "var(--success-dim)", text: "#4ade80", border: "rgba(34,197,94,0.2)" },
-  };
-  const s = styles[color] || styles.brand;
-  return (
-    <Link href={href}
-      className="card card-interactive flex items-center justify-between p-3 group"
-      style={{ textDecoration: "none" }}>
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: s.bg, border: `1px solid ${s.border}` }}>
-          <Icon size={13} style={{ color: s.text }} />
-        </div>
-        <div>
-          <p className="text-xs font-medium" style={{ color: "var(--text-1)" }}>{label}</p>
-          <p className="text-xs hidden sm:block" style={{ color: "var(--text-3)" }}>{desc}</p>
-        </div>
-      </div>
-      <ChevronRight size={13} className="transition-transform group-hover:translate-x-0.5"
-        style={{ color: "var(--text-4)" }} />
-    </Link>
   );
 }
