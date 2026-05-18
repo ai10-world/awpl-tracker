@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS public.streaks (
 
 CREATE INDEX IF NOT EXISTS streaks_profile_id_idx ON public.streaks(profile_id);
 
+DROP TRIGGER IF EXISTS streaks_updated_at ON public.streaks;
+CREATE TRIGGER streaks_updated_at
+  BEFORE UPDATE ON public.streaks
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
+
 ALTER TABLE public.streaks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "streaks_select" ON public.streaks FOR SELECT USING (true);
 CREATE POLICY "streaks_insert" ON public.streaks FOR INSERT WITH CHECK (true);

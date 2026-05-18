@@ -9,7 +9,7 @@ export function VaultModal({
   onClose,
 }: {
   teamOptions: Array<{ id: string; name: string }>;
-  onSave: (data: { name: string; teamId: string }) => void;
+  onSave: (data: { name: string; teamId: string | null }) => void;
   onClose: () => void;
 }) {
   const [name, setName] = useState("");
@@ -21,11 +21,7 @@ export function VaultModal({
       setError("Vault name is required");
       return;
     }
-    if (!teamId) {
-      setError("Please select a team");
-      return;
-    }
-    onSave({ name: name.trim(), teamId });
+    onSave({ name: name.trim(), teamId: teamId || null });
   }
 
   return (

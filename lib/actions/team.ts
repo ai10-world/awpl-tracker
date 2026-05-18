@@ -84,6 +84,7 @@ export async function addMember(formData: FormData) {
     team_id: teamId, profile_id: memberProfile.id, role, rank,
     can_assign_tasks: role === "team_leader",
     can_view_reports: role === "team_leader",
+    can_view_vault: role === "team_leader",
   });
   if (addError) return { error: addError.message };
 
@@ -113,10 +114,17 @@ export async function updateMemberRole(formData: FormData) {
   const rank = parseInt(formData.get("rank") as string) || 0;
   const canAssignTasks = formData.get("can_assign_tasks") === "true";
   const canViewReports = formData.get("can_view_reports") === "true";
+  const canViewVault = formData.get("can_view_vault") === "true";
 
   const { error } = await adminSupabase
     .from("team_members")
-    .update({ role, rank, can_assign_tasks: canAssignTasks, can_view_reports: canViewReports })
+    .update({
+      role,
+      rank,
+      can_assign_tasks: canAssignTasks,
+      can_view_reports: canViewReports,
+      can_view_vault: canViewVault,
+    })
     .eq("id", memberId);
   if (error) return { error: error.message };
 

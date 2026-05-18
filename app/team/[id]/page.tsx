@@ -44,7 +44,7 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
   const isAdmin = profile.role === "platform_admin" || team.admin_id === user.id;
   const { data: myMembership } = await adminSupabase
     .from("team_members")
-    .select("role, can_assign_tasks, can_view_reports")
+    .select("role, can_assign_tasks, can_view_reports, can_view_vault")
     .eq("team_id", params.id)
     .eq("profile_id", user.id)
     .single();

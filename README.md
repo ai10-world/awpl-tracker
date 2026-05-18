@@ -1,77 +1,58 @@
 # AWPL Team Tracker
 
-A team performance tracking platform for AWPL network leaders. Built with **Next.js 14 App Router** + **Supabase** + **Vercel**.
+A team performance tracking platform for AWPL network leaders. Built with Next.js 14 App Router, Supabase, Tailwind CSS, and Vercel.
 
----
+## Current Features
 
-## Tech Stack
+- AWPL ID signup and login with password plus security PIN
+- Daily PIN login using AWPL ID plus PIN
+- Teams, roles, member permissions, and admin views
+- Daily reports with plan, follow-up, sign-up, SP, review status, streaks, and activity feed
+- Database-backed AWPL Vault with PIN lock and role-based vault access
+- PWA manifest and Vercel Speed Insights
 
-| Layer | Tool |
-|---|---|
-| Frontend | Next.js 14 (App Router) |
-| Styling | Tailwind CSS |
-| Auth + Database | Supabase |
-| Hosting | Vercel |
+## Database Setup
 
----
+Run the SQL files in this order from the Supabase SQL Editor:
 
-## Phase 1 Setup — Step by Step
+1. `supabase-schema.sql`
+2. `reports-schema-updated.sql`
+3. `streaks-schema.sql`
+4. `vault-schema.sql`
 
-### 1. Run the database schema in Supabase
+The older `phase2-schema.sql` and `phase3-schema.sql` files were removed because they described outdated table shapes and could drop or recreate active tables incorrectly.
 
-1. Go to your Supabase project → **SQL Editor**
-2. Open `supabase-schema.sql` from this project
-3. Paste the entire file and click **Run**
+## Environment
 
-This creates:
-- `profiles` table (users, AWPL IDs, PINs, roles)
-- `teams` and `team_members` tables (Phase 2 preview)
-- Row Level Security policies
-- Helper functions
-
-### 2. Set your environment variables
-
-Copy `.env.example` to `.env.local`:
+Copy `.env.example` to `.env.local` and fill:
 
 ```bash
-cp .env.example .env.local
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=
 ```
 
-Your `.env.local` already has the correct Supabase URL and anon key filled in.
+For production, set the same values in Vercel. `NEXT_PUBLIC_APP_URL` should be your deployed app URL, for example `https://awpl-tracker-theta.vercel.app`.
 
-### 3. Install dependencies
+## Development
 
 ```bash
 npm install
-```
-
-### 4. Run locally
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open `http://localhost:3000`.
 
-### 5. Deploy to Vercel
+## Production Check
 
 ```bash
-# Install Vercel CLI if you haven't
-npm i -g vercel
-
-# Deploy
-vercel
+npm run build
 ```
 
-In Vercel dashboard, add these environment variables:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+## Make Yourself Platform Admin
 
----
-
-## Make yourself Platform Admin
-
-After you create your first account through the app, run this in the Supabase SQL Editor:
+After creating your first account, run:
 
 ```sql
 update public.profiles
@@ -79,52 +60,10 @@ set role = 'platform_admin'
 where awpl_id = 'YOUR_AWPL_ID_HERE';
 ```
 
----
+## Vault Access Rules
 
-## Project Structure
-
-```
-awpl-tracker/
-├── app/
-│   ├── page.tsx              ← Landing page (EN + HI toggle)
-│   ├── layout.tsx            ← Root layout
-│   ├── globals.css           ← Global styles + design tokens
-│   ├── auth/
-│   │   ├── layout.tsx        ← Auth pages wrapper
-│   │   ├── login/page.tsx    ← Login (AWPL ID + password + PIN)
-│   │   └── signup/page.tsx   ← Sign up
-│   └── dashboard/
-│       └── page.tsx          ← Protected dashboard (Phase 2+)
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts         ← Browser Supabase client
-│   │   └── server.ts         ← Server Supabase client
-│   └── actions/
-│       └── auth.ts           ← Server actions: signUp, logIn, logOut
-├── middleware.ts              ← Route protection + session refresh
-├── supabase-schema.sql       ← Run this in Supabase SQL Editor
-└── .env.local                ← Your env vars (already filled in)
-```
-
----
-
-## How auth works
-
-1. **Sign up**: User enters name + AWPL ID + email + password + PIN
-2. Supabase creates an auth user
-3. A `profiles` row is created linking the auth user to their AWPL ID
-4. **Account reconnect**: If someone signs up with the same AWPL ID again, they're reconnected to their existing profile — no duplicates
-5. **Log in**: User enters AWPL ID → we look up their email → verify PIN → sign in with email+password
-6. **Session**: Supabase handles JWT session. Middleware refreshes it automatically.
-7. **Route protection**: `/dashboard` and other protected routes redirect to login if no session
-
----
-
-## Build Plan
-
-| Phase | Days | Status |
-|---|---|---|
-| Phase 1 — Foundation & Auth | Days 1–5 | ✅ Done |
-| Phase 2 — Teams & Roles | Days 6–10 | Next |
-| Phase 3 — Core Tracking | Days 11–17 | Upcoming |
-| Phase 4 — Notifications & Polish | Days 18–22 | Upcoming |
+- Platform admin can see all vaults.
+- Team admin can see vaults linked to their teams.
+- Team leader can see team vaults only when `team_members.can_view_vault = true`.
+- Member can see their own personal vaults and their own team vault entries.
+- `awpl_vault_permissions` supports explicit per-vault grants for future sharing UI.

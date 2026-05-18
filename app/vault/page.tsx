@@ -38,12 +38,12 @@ export default async function VaultPage() {
       id: t.id,
       name: t.name,
       myRole: "platform_admin",
-      canViewReports: true,
+      canViewVault: true,
     }));
   } else {
     const { data: memberships } = await adminSupabase
       .from("team_members")
-      .select("role, can_view_reports, team:teams(id, name)")
+      .select("role, can_view_vault, team:teams(id, name)")
       .eq("profile_id", user.id)
       .order("joined_at", { ascending: true });
 
@@ -53,7 +53,7 @@ export default async function VaultPage() {
         id: m.team.id,
         name: m.team.name,
         myRole: m.role,
-        canViewReports: !!m.can_view_reports,
+        canViewVault: !!m.can_view_vault,
       }));
   }
 

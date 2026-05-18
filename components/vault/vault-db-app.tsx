@@ -107,7 +107,7 @@ export function VaultDbApp({
   onLock,
 }: {
   profile: any;
-  availableTeams: Array<{ id: string; name: string; myRole: string; canViewReports: boolean }>;
+  availableTeams: Array<{ id: string; name: string; myRole: string; canViewVault: boolean }>;
   onLock: () => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
@@ -191,8 +191,8 @@ export function VaultDbApp({
     loadData();
   }, []);
 
-  async function handleSaveVault(data: { name: string; teamId: string }) {
-    if (!availableTeams.some((t) => t.id === data.teamId)) {
+  async function handleSaveVault(data: { name: string; teamId: string | null }) {
+    if (data.teamId && !availableTeams.some((t) => t.id === data.teamId)) {
       notify("You are not allowed to create vault in that team", "error");
       return;
     }
@@ -200,7 +200,7 @@ export function VaultDbApp({
     const { error } = await supabase.from("awpl_vaults").insert({
       owner_id: profile.id,
       name: data.name,
-      team_id: data.teamId,
+      team_id: data.teamId || null,
     });
 
     if (error) {
@@ -318,9 +318,9 @@ export function VaultDbApp({
           id: v.id,
           owner_id: profile.id,
           name: v.name,
-          team_id: v.teamId,
+          team_id: v.teamId || null,
         }))
-        .filter((v: any) => v.team_id && validTeamIds.has(v.team_id));
+        .filter((v: any) => !v.team_id || validTeamIds.has(v.team_id));
 
       if (vaultPayload.length > 0) {
         const { error } = await supabase.from("awpl_vaults").upsert(vaultPayload, { onConflict: "id" });
@@ -576,7 +576,7 @@ export function VaultDbApp({
 
       {showVault && (
         <VaultModal
-          teamOptions={availableTeams.map((t) => ({ id: t.id, name: t.name }))}
+          teamOptions={[{ id: "", name: "Personal Vault" }, ...availableTeams.map((t) => ({ id: t.id, name: t.name }))]}
           onSave={handleSaveVault}
           onClose={() => setShowVault(false)}
         />
