@@ -11,7 +11,6 @@ import {
   TeamMiniCard,
   EmptyTeams,
   ActivitySection,
-  CalculatorLink,
 } from "@/components/dashboard/dashboard-client";
 import { CheckCircle, AlertCircle } from "lucide-react";
 
@@ -221,7 +220,6 @@ export default async function DashboardPage() {
                 {["platform_admin", "team_admin", "team_leader"].includes(profile.role) && (
                   <ActionCard href="/reports/team" icon="trendingUp" label="Team Reports" desc="See submissions" color="green" />
                 )}
-                <CalculatorLink />
               </div>
             </div>
 

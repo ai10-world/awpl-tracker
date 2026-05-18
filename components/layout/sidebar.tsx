@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 import { logOut } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, ClipboardList,
-  Shield, Calculator, LogOut, ChevronLeft,
-  ChevronRight, TrendingUp, Zap, Settings, Bell, Lock,
+  Shield, LogOut, ChevronLeft,
+  ChevronRight, TrendingUp, Zap, Settings, Bell,
 } from "lucide-react";
 
 interface NavItem {
@@ -26,7 +26,6 @@ const navItems: NavItem[] = [
   { href: "/reports/team", icon: TrendingUp, label: "Team Reports", roles: ["platform_admin", "team_admin", "team_leader"] },
   { href: "/reports", icon: ClipboardList, label: "My Reports", excludeRoles: ["platform_admin"] },
   { href: "/team", icon: Users, label: "Teams" },
-  { href: "/vault", icon: Lock, label: "Vault" },
   { href: "/admin", icon: Shield, label: "Admin", roles: ["platform_admin"] },
 ];
 
@@ -111,15 +110,6 @@ export function Sidebar({ profile }: { profile: any }) {
           {!collapsed && (
             <div className="mx-3 my-2" style={{ borderTop: "1px solid var(--border-1)" }} />
           )}
-
-          <a href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
-            target="_blank" rel="noopener noreferrer"
-            title={collapsed ? "Price Calculator" : undefined}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group"
-            style={{ color: "var(--text-3)" }}>
-            <Calculator size={16} className="flex-shrink-0" />
-            {!collapsed && <span className="flex-1 truncate">Calculator</span>}
-          </a>
         </nav>
 
         {/* Profile + Logout */}

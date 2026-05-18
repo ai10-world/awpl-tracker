@@ -24,6 +24,21 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
+  const decodedPath = decodeURIComponent(pathname);
+
+  const hiddenToolPaths = [
+    "/saved_lists.html",
+  ];
+  const isHiddenCalculatorPath =
+    decodedPath.includes("AWPL (all good).html") ||
+    hiddenToolPaths.includes(decodedPath);
+
+  if (isHiddenCalculatorPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = user ? "/dashboard" : "/";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
   const protectedRoutes = ["/dashboard", "/team", "/reports", "/admin", "/activity", "/vault"];
   const authRoutes = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-pin"];

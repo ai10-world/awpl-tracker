@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { logOut } from "@/lib/actions/auth";
-import { ArrowRight, LogOut, Users, Shield, Calculator } from "lucide-react";
+import { ArrowRight, LogOut, Users, Shield } from "lucide-react";
 
 const roleLabels: Record<string, string> = {
   platform_admin: "Platform Admin",
@@ -71,11 +71,6 @@ export default function WelcomeBackPage({ profile }: { profile: any }) {
               <Shield size={13} /> Admin Panel
             </Link>
           )}
-          <a href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
-            target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/8 hover:border-white/20 text-white/50 hover:text-white text-xs transition-all">
-            <Calculator size={13} /> Calculator
-          </a>
         </div>
 
         {/* Sign out */}

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Users, ClipboardList, TrendingUp, Star, Shield, Calculator, ChevronRight, ArrowRight, Plus, Zap } from "lucide-react";
+import { Users, ClipboardList, TrendingUp, Star, Shield, ChevronRight, Plus, Zap } from "lucide-react";
 import { ActivityFeed } from "@/components/feed/activity-feed";
 import { StreakCard } from "@/components/streaks/streak-card";
 
@@ -136,27 +136,5 @@ export function ActivitySection({
         <ActivityFeed events={events} showTeamName={showTeamName} maxItems={8} />
       )}
     </div>
-  );
-}
-
-// ── Calculator Link ────────────────────────────────────────────
-export function CalculatorLink() {
-  return (
-    <a
-      href="https://awpl-tracker-theta.vercel.app/AWPL%20(all%20good).html"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="card card-interactive flex items-center justify-between p-3 group"
-      style={{ textDecoration: "none" }}
-    >
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: "rgba(255,115,10,0.1)", border: "1px solid rgba(255,115,10,0.2)" }}>
-          <Calculator size={13} style={{ color: "var(--brand-400)" }} />
-        </div>
-        <p className="text-xs font-medium" style={{ color: "var(--text-1)" }}>Price Calculator</p>
-      </div>
-      <ArrowRight size={13} style={{ color: "var(--text-4)" }} />
-    </a>
   );
 }

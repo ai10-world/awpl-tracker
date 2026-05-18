@@ -33,7 +33,6 @@ export function MemberList({
   const [editRank, setEditRank] = useState(0);
   const [editCanAssign, setEditCanAssign] = useState(false);
   const [editCanView, setEditCanView] = useState(false);
-  const [editCanViewVault, setEditCanViewVault] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -43,7 +42,6 @@ export function MemberList({
     setEditRank(m.rank || 0);
     setEditCanAssign(m.can_assign_tasks || false);
     setEditCanView(m.can_view_reports || false);
-    setEditCanViewVault(m.can_view_vault || false);
   };
 
   const saveEdit = async (m: any) => {
@@ -54,7 +52,6 @@ export function MemberList({
     fd.set("rank", String(editRank));
     fd.set("can_assign_tasks", String(editCanAssign));
     fd.set("can_view_reports", String(editCanView));
-    fd.set("can_view_vault", String(editCanViewVault));
     await updateMemberRole(fd);
     setLoadingId(null);
     setEditingId(null);
@@ -184,10 +181,6 @@ export function MemberList({
                     <label className="flex items-center gap-2 text-xs text-white/40 cursor-pointer">
                       <input type="checkbox" checked={editCanView} onChange={(e) => setEditCanView(e.target.checked)} className="accent-orange-500" />
                       Can view reports
-                    </label>
-                    <label className="flex items-center gap-2 text-xs text-white/40 cursor-pointer">
-                      <input type="checkbox" checked={editCanViewVault} onChange={(e) => setEditCanViewVault(e.target.checked)} className="accent-orange-500" />
-                      Can view vault
                     </label>
                   </div>
                 </div>
